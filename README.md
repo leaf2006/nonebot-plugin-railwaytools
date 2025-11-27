@@ -31,6 +31,7 @@ git clone https://github.com/leaf2006/nonebot-plugin-railwaytools.git
 
 ## TODO 🔜
 
+- 正在计划给查询机车户口照功能加入显示机车配属与构造速度等信息
 - 查询列车始发/终到功能暂未实现
 - 如用户的输入内容非法，错误值仅停留在后台而无法通过机器人输出给用户
 - 由于下关站的性能问题导致的加载图片较慢，可以通过切换为小图模式解决。但是小图比较模糊，只能说在加载速度快和图片质量高这两者之间只能二选一。本人意向添加切换大/小图的设置选项，但是目前还未开发
@@ -41,6 +42,4 @@ git clone https://github.com/leaf2006/nonebot-plugin-railwaytools.git
 - 机车户口照图片来源于下关站：http://www.xiaguanzhan.com/
 
 
-<div style="text-align: center;">
 Copyright © Leaf developer 2023-2025，遵循MIT开源协议
-</div>

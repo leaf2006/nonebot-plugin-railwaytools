@@ -10,10 +10,11 @@ train_number = on_command("车次", rule=to_me(), aliases={"cc", "查车次"}, p
 information_helper = on_command("help",rule=to_me(),aliases={"帮助"},priority=1,block=True)
 xiaguanzhan_photo = on_command("下关站",rule=to_me(),aliases={"xgz"},priority=1,block=True)
 
+headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36"}  # noqa: E501
+
 @emu_number.handle() #通过车次查询车组号
 async def handle_function(args: Message = CommandArg()): # type: ignore
     if number := args.extract_plain_text():  # noqa: F841
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36"}  # noqa: E501
         link_emu_number = 'https://api.rail.re/train/' + number
         x = requests.get(link_emu_number, headers=headers)
         data = json.loads(x.text)
@@ -34,7 +35,6 @@ async def handle_function(args: Message = CommandArg()): # type: ignore
 @train_number.handle() #通过车组号查询车次
 async def handle_function(args: Message = CommandArg()): # type: ignore
     if number := args.extract_plain_text():  # noqa: F841
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36"}  # noqa: E501
         link_train_number = 'https://api.rail.re/emu/' + number
         x = requests.get(link_train_number, headers=headers)
         data = json.loads(x.text)
