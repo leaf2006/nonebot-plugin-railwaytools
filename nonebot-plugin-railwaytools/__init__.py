@@ -1,6 +1,6 @@
 # Copyright © Leaf developer 2023-2025
 # 代码写的一坨屎，一堆功能挤在__init__.py，轻点喷qwq
-# 本项目中“列车查询”的部分功能灵感来源于GitHub项目https://github.com/zmy15/ChinaRailway，特此注明
+# 本项目少量使用了GitHub Copilot，其中“列车查询”的部分功能灵感来源于GitHub项目https://github.com/zmy15/ChinaRailway，特此注明
 
 import json
 import requests
@@ -18,6 +18,9 @@ train_info = on_command("列车查询",aliases={"cx","查询"},priority=5,block=
 information_helper = on_command("help",aliases={"帮助"},priority=6,block=True)
 
 headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36"}  # noqa: E501
+
+def time_Formatter(time) -> str: # 格式化时间，1145 -> 11:45
+    return time[:2] + ":" + time[2:]
 
 @emu_number.handle() #通过车次查询车组号
 async def handle_function(args: Message = CommandArg()): # type: ignore
@@ -70,7 +73,7 @@ async def handle_function(args: Message = CommandArg()): # type: ignore
 @train_info.handle() # 通过车次查询列车具体信息，不只是能查询动车组，普速列车也可查询
 async def handle_function(args: Message = CommandArg()): # type: ignore
     if train_Number_in_Info := args.extract_plain_text():
-        toDay = datetime.date.today().strftime("%Y%m%d") #今日时间，以%Y%m%d的格式形式输出
+        toDay = datetime.date.today().strftime("%Y%m%d") #获取今日时间，以%Y%m%d的格式形式输出
         
         info_data = {
             "trainCode" : train_Number_in_Info.upper(),
@@ -90,12 +93,38 @@ async def handle_function(args: Message = CommandArg()): # type: ignore
         jiaolu_Train_style = stop_time[0]["jiaolu_train_style"] # 车底类型
         jiaolu_Dept_train = stop_time[0]["jiaolu_dept_train"] # 车底配属
 
+        stop_inf = []
+        stop_dict = {}
+        
+        for stop in stop_time: # 遍历该列车的所有站点、到点、发点、停车时间
+            station = stop['stationName']
+            arrive_time = time_Formatter(stop['arriveTime'])
+            start_time = time_Formatter(stop['startTime'])
+            stopover_time = stop['stopover_time'] + "分"
+            stop_dict.setdefault("站点",station)
+            stop_dict.setdefault("到点",arrive_time)
+            stop_dict.setdefault("发点",start_time)
+            stop_dict.setdefault("停车时间",stopover_time)
+            stop_inf.append(stop_dict)
+            stop_dict = {}
+        
+        station_result = ""
+        station_result_number = 1 # 给时刻表标上序号
+        for stop in stop_inf:
+            station_result += str(station_result_number) + "." + stop['站点'] + "：" + stop['到点'] + "到," + stop['发点'] + "发，停车" + stop['停车时间'] + "\n"
+            station_result_number += 1
+
+
+
         train_info_result = Message([ #结果Message
             "车次：",train_Number_in_Info.upper(),
             "（",start_Station_name , "——" , end_Station_name , ") \n",
             "担当客运段：" , jiaolu_Corporation_code , "\n",
             "车型信息：" , jiaolu_Train_style , "\n",
-            "配属：" , jiaolu_Dept_train ,
+            "配属：" , jiaolu_Dept_train , "\n \n",
+            "----------停站信息----------\n",
+            station_result,
+            "------------------------------",
         ]) # type: ignore
 
         await train_info.finish(train_info_result)
@@ -112,7 +141,7 @@ async def handle_function():
         "① 通过车次查询担当的动车组车组号：/车号 或 /ch （例如：/车号 D3211） \n \n",
         "② 通过动车组车组号查询担当车次：/车次 或 /cc （例如：/车次 CRH2A-2001） \n \n",
         "③ 通过车号查询下关站机车户口照：/下关站 或 /xgz （例如：/下关站 DF7C-5030） \n \n",
-        "④ 通过列车车次查询该车次的始发终到、担当客运段、车型信息以及配属，同时支持动车组与普速列车：/查询 或 /cx （例如：/查询 Z99）\n \n"
+        "④ 通过列车车次查询该车次的始发终到、担当客运段、车型信息、配属以及具体时刻表，同时支持动车组与普速列车：/查询 或 /cx （例如：/查询 Z99）\n \n"
         "⑤ 帮助：/帮助 或 /help \n \n",
         "更多功能正在开发中，尽情期待！ \n",
         "------------------------------ \n \n",
