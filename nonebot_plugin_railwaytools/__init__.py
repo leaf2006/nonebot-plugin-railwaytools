@@ -7,14 +7,37 @@ import requests
 import datetime  
 from nonebot import on_command  
 from nonebot.adapters.onebot.v11 import Message, MessageSegment  
+from nonebot.plugin import PluginMetadata
+from .config import Config
 from nonebot.params import CommandArg  
 from nonebot.rule import to_me
 from .api import API  
+
+# 插件配置页
+# __plugin_meta__ = PluginMetadata(
+#     name="{火车迷铁路工具箱}",
+#     description="{这是一个火车迷也许觉得很好用的铁路工具箱}",
+#     usage="{插件用法}",
+
+#     type="{插件分类}",
+#     # 发布必填，当前有效类型有：`library`（为其他插件编写提供功能），`application`（向机器人用户提供功能）。
+
+#     homepage="{项目主页}",
+#     # 发布必填。
+
+#     config=Config,
+#     # 插件配置项类，如无需配置可不填写。
+
+#     supported_adapters={"~onebot.v11", "~telegram"},
+#     # 支持的适配器集合，其中 `~` 在此处代表前缀 `nonebot.adapters.`，其余适配器亦按此格式填写。
+#     # 若插件可以保证兼容所有适配器（即仅使用基本适配器功能）可不填写，否则应该列出插件支持的适配器。
+# )
 
 emu_number = on_command("车号",aliases={"ch", "查车号"}, priority=5,block=True)
 train_number = on_command("车次",aliases={"cc", "查车次"}, priority=5,block=True)
 xiaguanzhan_photo = on_command("下关站",aliases={"xgz"},priority=5,block=True)
 train_info = on_command("列车查询",aliases={"cx","查询"},priority=5,block=True)
+# station_screen = on_command("大屏",aliases={"dp","车站大屏"},priority=5,block=True)
 information_helper = on_command("help",aliases={"帮助"},priority=6,block=True)
 
 headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36"}  # noqa: E501
@@ -110,11 +133,9 @@ async def handle_function(args: Message = CommandArg()): # type: ignore
         
         station_result = ""
         station_result_number = 1 # 给时刻表标上序号
-        for stop in stop_inf:
+        for stop in stop_inf: # 想办法整出时刻表的结果，最后将结果添加到Message中去
             station_result += str(station_result_number) + "." + stop['站点'] + "：" + stop['到点'] + "到," + stop['发点'] + "发，停车" + stop['停车时间'] + "\n"
             station_result_number += 1
-
-
 
         train_info_result = Message([ #结果Message
             "车次：",train_Number_in_Info.upper(),
@@ -131,6 +152,10 @@ async def handle_function(args: Message = CommandArg()): # type: ignore
 
     else:
         await train_info.finish("请输入正确的列车车次！（如：Z99）")
+
+# @station_screen.handle() #车站大屏
+# async def handle_function(args: Message = CommandArg()): # type: ignore
+#     if station_Name_in_station_screen := args.extract_plain_text():
 
 
 @information_helper.handle() #帮助页面
