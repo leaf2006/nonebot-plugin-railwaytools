@@ -147,7 +147,4 @@ nonebot_plugin_railwaytools/config.py
 .env.dev
 .env.prod
 
-#暂时不能给你看
-pyproject.toml
-
 # End of https://www.toptal.com/developers/gitignore/api/python
