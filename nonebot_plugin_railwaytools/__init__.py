@@ -1,7 +1,6 @@
 # Copyright © Leaf developer 2023-2025
 # 代码写的一坨屎，一堆功能挤在__init__.py，轻点喷qwq
 # 本项目少量使用了GitHub Copilot，其中“列车查询”的部分功能灵感来源于GitHub项目https://github.com/zmy15/ChinaRailway，特此注明
-import aiohttp
 import httpx
 import json
 import datetime  
