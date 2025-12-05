@@ -33,7 +33,7 @@ __plugin_meta__ = PluginMetadata(
     config=Config,
     # 插件配置项类，如无需配置可不填写。
 
-    supported_adapters={"~onebot.v11", "~telegram"},
+    supported_adapters={"~onebot.v11"},
     # 支持的适配器集合，其中 `~` 在此处代表前缀 `nonebot.adapters.`，其余适配器亦按此格式填写。
     # 若插件可以保证兼容所有适配器（即仅使用基本适配器功能）可不填写，否则应该列出插件支持的适配器。
 )
@@ -42,10 +42,9 @@ emu_number = on_command("车号",aliases={"ch", "查车号"}, priority=5,block=T
 train_number = on_command("车次",aliases={"cc", "查车次"}, priority=5,block=True)
 xiaguanzhan_photo = on_command("下关站",aliases={"xgz"},priority=5,block=True)
 train_info = on_command("列车查询",aliases={"cx","查询"},priority=5,block=True)
-# station_screen = on_command("大屏",aliases={"dp","车站大屏"},priority=5,block=True)
 information_helper = on_command("help",aliases={"帮助"},priority=6,block=True)
 
-def time_Formatter(time) -> str: # 格式化时间，1145 -> 11:45
+def time_Formatter_1(time) -> str: # 格式化时间，1145 -> 11:45
     return time[:2] + ":" + time[2:]
 
 @emu_number.handle()
@@ -118,7 +117,14 @@ async def handle_function(args: Message = CommandArg()): # type: ignore
             end_Station_name = stop_time[0]['end_station_name'] # 终到站名
 
             jiaolu_Corporation_code = stop_time[0]["jiaolu_corporation_code"] # 担当客运段
-            jiaolu_Train_style = stop_time[0]["jiaolu_train_style"] # 车底类型
+            if info_data["trainCode"][0] == "D" or info_data["trainCode"][0] == "G" or info_data["trainCode"][0] == "C":
+                link_emu_number = API.api_rail_re + "train/" + info_data["trainCode"]
+                res_info_EMU = await client.get(link_emu_number)
+                info_EMU_code = json.loads(res_info_EMU.text)
+                jiaolu_Train_style = info_EMU_code[0]['emu_no']
+
+            else:
+                jiaolu_Train_style = stop_time[0]["jiaolu_train_style"] # 车底类型
             jiaolu_Dept_train = stop_time[0]["jiaolu_dept_train"] # 车底配属
 
             stop_inf = []
@@ -126,8 +132,8 @@ async def handle_function(args: Message = CommandArg()): # type: ignore
 
             for stop in stop_time: # 遍历该列车的所有站点、到点、发点、停车时间
                 station = stop['stationName']
-                arrive_time = time_Formatter(stop['arriveTime'])
-                start_time = time_Formatter(stop['startTime'])
+                arrive_time = time_Formatter_1(stop['arriveTime'])
+                start_time = time_Formatter_1(stop['startTime'])
                 stopover_time = stop['stopover_time'] + "分"
                 stop_dict.setdefault("站点",station)
                 stop_dict.setdefault("到点",arrive_time)
