@@ -12,7 +12,14 @@ pip install datetime
 ```
 
 ## Getting Started 🚀
-将本repo中的nonebot-plugin-railwaytools文件夹clone到机器人的src\plugins目录中，即可使用。
+
+- 1.可通过pip安装该插件
+
+```sh
+pip install nonebot-plugin-railwaytools
+```
+
+- 2.将本repo中的nonebot-plugin-railwaytools文件夹clone到机器人的src\plugins目录中，即可使用。
 
 ```sh
 git clone https://github.com/leaf2006/nonebot-plugin-railwaytools.git

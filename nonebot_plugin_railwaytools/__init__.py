@@ -44,8 +44,13 @@ xiaguanzhan_photo = on_command("下关站",aliases={"xgz"},priority=5,block=True
 train_info = on_command("列车查询",aliases={"cx","查询"},priority=5,block=True)
 information_helper = on_command("help",aliases={"帮助"},priority=6,block=True)
 
+# def区
 def time_Formatter_1(time) -> str: # 格式化时间，1145 -> 11:45
     return time[:2] + ":" + time[2:]
+
+def EMU_code_formatter(str): # 格式化动车组车号 CRH2A2001 -> CRH2A-2001
+    return str[:-4] + "-" + str[-4:]
+
 
 @emu_number.handle()
 async def handle_function(args: Message = CommandArg()): # type: ignore
@@ -57,7 +62,7 @@ async def handle_function(args: Message = CommandArg()): # type: ignore
             num = 0
             final_result = ""
             while num < 8:
-                result = data[num]['emu_no']
+                result = EMU_code_formatter(data[num]['emu_no'])
                 time = data[num]['date']
                 final_result += time + '：' +result + "\n"
                 num += 1
@@ -121,7 +126,7 @@ async def handle_function(args: Message = CommandArg()): # type: ignore
                 link_emu_number = API.api_rail_re + "train/" + info_data["trainCode"]
                 res_info_EMU = await client.get(link_emu_number)
                 info_EMU_code = json.loads(res_info_EMU.text)
-                jiaolu_Train_style = info_EMU_code[0]['emu_no']
+                jiaolu_Train_style = EMU_code_formatter(info_EMU_code[0]['emu_no'])
 
             else:
                 jiaolu_Train_style = stop_time[0]["jiaolu_train_style"] # 车底类型
