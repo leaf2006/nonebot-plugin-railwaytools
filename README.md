@@ -1,6 +1,6 @@
 <div align="center">
     <a href="https://v2.nonebot.dev/store">
-        <img src="https://cdn.jsdelivr.net/gh/leaf2006/image/img/title_about_nb_plugin_railwaytools.png">
+        <img src="https://cdn.jsdelivr.net/gh/leaf2006/image/img/nb_plugin_railwaytools.png">
     </a>
 
 # nonebot-plugin-railwaytools
