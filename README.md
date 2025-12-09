@@ -15,7 +15,7 @@
 
 - 需提前安装以下依赖库：
 ```sh
-pip install requests
+pip install httpx
 pip install datetime
 ```
 
