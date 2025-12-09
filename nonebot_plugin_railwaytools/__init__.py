@@ -51,9 +51,8 @@ def time_Formatter_1(time) -> str: # 格式化时间，1145 -> 11:45
 def EMU_code_formatter(str): # 格式化动车组车号 CRH2A2001 -> CRH2A-2001
     return str[:-4] + "-" + str[-4:]
 
-
 @emu_number.handle()
-async def handle_function(args: Message = CommandArg()): # type: ignore
+async def handle_emu_number(args: Message = CommandArg()): # type: ignore
     if number := args.extract_plain_text():
         async with httpx.AsyncClient() as client:
             link_emu_number = API.api_rail_re + 'train/' + number.upper()
@@ -73,7 +72,7 @@ async def handle_function(args: Message = CommandArg()): # type: ignore
         await emu_number.finish("请输入车号")
 
 @xiaguanzhan_photo.handle() #查询下关站列车户口照
-async def handle_function(args: Message = CommandArg()): # type: ignore
+async def handle_xiaguanzhan_photo(args: Message = CommandArg()): # type: ignore
     if number := args.extract_plain_text():
         await xiaguanzhan_photo.send("正在加载图片，时间可能略久...")
         photo = API.api_xiaguanzhan + number + ".jpg"
@@ -82,7 +81,7 @@ async def handle_function(args: Message = CommandArg()): # type: ignore
         await xiaguanzhan_photo.finish("请输入正确的车号!，如：DF7C-5030")
 
 @train_number.handle() #通过车组号查询车次
-async def handle_function(args: Message = CommandArg()): # type: ignore
+async def handle_train_number(args: Message = CommandArg()): # type: ignore
     if number := args.extract_plain_text():  # noqa: F841
         async with httpx.AsyncClient() as client:
             link_train_number = API.api_rail_re + 'emu/' + number.upper()
@@ -101,7 +100,7 @@ async def handle_function(args: Message = CommandArg()): # type: ignore
         await train_number.finish("请输入车次")
 
 @train_info.handle() # 通过车次查询列车具体信息，不只是能查询动车组，普速列车也可查询
-async def handle_function(args: Message = CommandArg()): # type: ignore
+async def handle_train_info(args: Message = CommandArg()): # type: ignore
     if train_Number_in_Info := args.extract_plain_text():
         async with httpx.AsyncClient() as client:
 
@@ -170,7 +169,7 @@ async def handle_function(args: Message = CommandArg()): # type: ignore
         await train_info.finish("请输入正确的列车车次！（如：Z99）")
 
 @information_helper.handle() #帮助页面
-async def handle_function():
+async def handle_information_helper():
     information_Helper_message = Message([
         "这是一个火车迷也许觉得很好用的铁路工具箱，具有多种功能 \n \n",
         "----------使用方法----------\n",
