@@ -21,7 +21,13 @@ pip install datetime
 
 ## Getting Started 🚀
 
-- 1.可通过pip安装该插件
+- 1.使用 nb-cli 安装：在 nonebot2 项目的根目录下打开命令行，输入以下指令即可安装
+
+```sh
+nb plugin install nonebot-plugin-railwaytools
+```
+
+- 2.可通过pip安装该插件
 
 ```sh
 pip install nonebot-plugin-railwaytools
