@@ -1,5 +1,8 @@
+# Copyright © Leaf developer 2023-2026
+# 这里存储本插件所需使用的所有API入口与链接
+
 class API:
     api_12306 = "https://mobile.12306.cn/wxxcx/wechat/main/travelServiceQrcodeTrainInfo"
     api_rail_re = "https://api.rail.re/"
     api_xiaguanzhan = "http://www.xiaguanzhan.com/uploadfiles/"
-    
+    api_station_screen = "https://apis.uctb.cn/api/12306?city="

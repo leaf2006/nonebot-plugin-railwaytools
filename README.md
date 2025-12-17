@@ -4,6 +4,18 @@
     </a>
 
 # nonebot-plugin-railwaytools
+
+<!-- ![GitHub Repo stars](https://img.shields.io/github/stars/leaf2006/nonebot-plugin-railwaytools) -->
+![GitHub Repo stars](https://img.shields.io/github/stars/leaf2006/nonebot-plugin-railwaytools?style=flat-square)
+![GitHub License](https://img.shields.io/github/license/leaf2006/nonebot-plugin-railwaytools?style=flat-square)
+![GitHub last commit](https://img.shields.io/github/last-commit/leaf2006/nonebot-plugin-railwaytools?style=flat-square)
+![Static Badge](https://img.shields.io/badge/Python-%3E%3D3.8-blue?style=flat-square)
+![PyPI - Version](https://img.shields.io/pypi/v/nonebot-plugin-railwaytools?style=flat-square)
+
+
+
+
+
 </div>
 
 
@@ -56,6 +68,7 @@ D3211次列车近8次担当的车组号为：
 2025-11-22 12:59：CRH2B2115
 2025-11-21 12:59：CRH2A2006
 ```
+
 - 通过动车组车组号查询担当车次：/车次 或 /cc （例如：/车次 CRH2A-2001）
 ```
 example：
@@ -71,6 +84,7 @@ CRH2A-2001近8次担当的车次为：
 2025-11-25 17:29：C3896
 2025-11-25 12:36：C3897
 ```
+
 - 通过车号查询下关站收录的机车户口照：/下关站 或 /xgz （例如：/下关站 DF7C-5030）
 ```
 example:
@@ -78,6 +92,7 @@ example:
 🤖：正在加载图片，时间可能略久...
 🤖：[DF7C-5058的机车户口照]
 ```
+
 - 通过列车车次查询该车次的始发终到、担当客运段、车型信息以及配属，同时支持动车组与普速列车：/查询 或 /cx （例如：/查询 Z99）
 ```
 example:
@@ -95,6 +110,31 @@ example:
 4.广州白云：09:45到,09:45发，停车0分
 ------------------------------
 ```
+
+- 通过车站名称查看车站大屏：/大屏 或 /dp （例如：/大屏 上海）
+```
+example:
+🤵：/大屏 上海
+🤖：
+【上海站】车站大屏如下：
+ 
+------------------------------ 
+【1】G7020（上海——南京）16:00开 ， 状态：停止检票 
+【2】K372（上海——大同）16:03开 ， 状态：正在检票 
+【3】G7632（上海——黄山北）16:13开 ， 状态：正点 
+【4】G8274（上海——徐州东）16:18开 ， 状态：正点 
+【5】G2818（上海——武汉）16:22开 ， 状态：正点 
+【6】T110（上海——北京）16:30开 ， 状态：正点 
+【7】G7076（上海——合肥南）16:41开 ， 状态：正点 
+【8】C3892（上海——扬州）16:42开 ， 状态：正点 
+【9】Z40（上海——乌鲁木齐）16:48开 ， 状态：正点 
+【10】G7222（上海——合肥）16:49开 ， 状态：正点 
+------------------------------ 
+ 
+仅显示该车站部分列车信息。本车站大屏来源于第三方API，及供参考，请勿用于实际乘车！
+数据刷新时间：2025-12-17 16:08:02
+```
+
 - 帮助：/帮助 或 /help
 ```
 example:
@@ -110,8 +150,10 @@ example:
 ③ 通过车号查询下关站机车户口照：/下关站 或 /xgz （例如：/下关站 DF7C-5030） 
  
 ④ 通过列车车次查询该车次的始发终到、担当客运段、车型信息以及配属，同时支持动车组与普速列车：/查询 或 /cx （例如：/查询 Z99）
+
+⑤ 通过车站名称查看车站大屏：/大屏 或 /dp （例如：/大屏 上海）
  
-⑤ 帮助：/帮助 或 /help 
+⑥ 帮助：/帮助 或 /help 
  
 更多功能正在开发中，尽情期待！ 
 ------------------------------ 
@@ -125,7 +167,8 @@ Copyright © Leaf developer 2023-2025
 
 ## TODO 🔜
 
-- 计划加入12306车站大屏功能 **（作为日后开发重点）**
+- 计划加入生成模拟列车检票大屏的图片的功能，类似CRsim的这种
+- ~~计划加入12306车站大屏功能~~ **（已实现）**
 - ~~正在计划加入12306查询列车始发终到、中途停站的功能~~ **（已实现）**
 - 优化列车时刻表的显示，比如说始发站不要显示到站时间，很怪异。目前可以看作是一个已知的bug
 - 如用户的输入内容非法，错误值仅停留在后台而无法通过机器人输出给用户
@@ -138,4 +181,4 @@ Copyright © Leaf developer 2023-2025
 - 列车查询数据来源于12306
 
 
-Copyright © Leaf developer 2023-2025，遵循MIT开源协议
+Copyright © Leaf developer 2023-2026，遵循MIT开源协议
