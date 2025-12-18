@@ -9,7 +9,7 @@ from .config import Config
 from nonebot.params import CommandArg  # type: ignore
 from nonebot.rule import to_me  # type: ignore
 from .emu_function import handle_emu_number , handle_train_number
-from .xiaguan_photo import handle_xiaguanzhan_photo
+from .picture_function import handle_xiaguanzhan_photo , handle_EMU_route_schedule
 from .train_info import handle_train_info
 from .station_screen import handle_station_screen
 
