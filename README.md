@@ -28,7 +28,6 @@
 - 需提前安装以下依赖库：
 ```sh
 pip install httpx
-pip install datetime
 ```
 
 ## Getting Started 🚀
@@ -190,4 +189,8 @@ Copyright © Leaf developer 2023-2025
 - 列车查询数据来源于12306
 
 
+<div align="center">
+
 Copyright © Leaf developer 2023-2026，遵循MIT开源协议
+
+</div>

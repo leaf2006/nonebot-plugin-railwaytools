@@ -25,16 +25,14 @@ async def handle_xiaguanzhan_photo(args: Message = CommandArg()): # type: ignore
 @EMU_route_schedule.handle() # 获取动车组交路表，还是来源于rail.re
 async def handle_EMU_route_schedule(args: Message = CommandArg()):
     if train_Number_input := args.extract_plain_text():
-        async with httpx.AsyncClient() as client:
-
-            res_EMU_route_schedule = API.api_EMU_route_schedule + train_Number_input.upper() + ".png"
-            EMU_Route_schedule_result = Message([
-                MessageSegment.image(res_EMU_route_schedule),
-                f"【{train_Number_input.upper()}次】动车组列车交路表 \n",
-                "⚠本功能还处于测试中⚠ \n 交路表来源：rail.re，部分运行图数据可能已经过时，仅供参考！",
-            ])
-            
-            await EMU_route_schedule.finish(EMU_Route_schedule_result)
+        res_EMU_route_schedule = API.api_EMU_route_schedule + train_Number_input.upper() + ".png"
+        EMU_Route_schedule_result = Message([
+            MessageSegment.image(res_EMU_route_schedule),
+            f"【{train_Number_input.upper()}次】动车组列车交路表 \n",
+            "⚠本功能还处于测试中⚠ \n 交路表来源：rail.re，部分运行图数据可能已经过时，仅供参考！",
+        ])
+        
+        await EMU_route_schedule.finish(EMU_Route_schedule_result)
     
     else:
         await EMU_route_schedule.finish("请输入正确的动车组车次!，如：D3211")

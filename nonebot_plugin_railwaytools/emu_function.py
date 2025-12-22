@@ -20,18 +20,25 @@ train_number = on_command("车次",aliases={"cc", "查车次"}, priority=5,block
 async def handle_emu_number(args: Message = CommandArg()): # type: ignore
     if number := args.extract_plain_text():
         async with httpx.AsyncClient() as client:
-            link_emu_number = API.api_rail_re + 'train/' + number.upper()
-            response = await client.get(link_emu_number)
-            data = json.loads(response.text)
-            num = 0
-            final_result = ""
-            while num < 8:
-                result = EMU_code_formatter(data[num]['emu_no'])
-                time = data[num]['date']
-                final_result += time + '：' +result + "\n"
-                num += 1
-                print_out = number.upper() + '次列车近8次担当的车组号为：\n' + final_result
-        await emu_number.finish(print_out) # type: ignore
+            try:
+                link_emu_number = API.api_rail_re + 'train/' + number.upper()
+                response = await client.get(link_emu_number)
+                data = json.loads(response.text)
+                num = 0
+                final_result = ""
+                while num < 8:
+                    result = EMU_code_formatter(data[num]['emu_no'])
+                    time = data[num]['date']
+                    final_result += time + '：' +result + "\n"
+                    num += 1
+                    print_out = number.upper() + '次列车近8次担当的车组号为：\n' + final_result
+
+            except json.JSONDecodeError:
+                print_out = "输入的动车组车次格式错误！"
+            except Exception as error:
+                print_out = "发生异常，" + error
+
+            await emu_number.finish(print_out) # type: ignore
 
     else:
         await emu_number.finish("请输入车号")
@@ -40,17 +47,24 @@ async def handle_emu_number(args: Message = CommandArg()): # type: ignore
 async def handle_train_number(args: Message = CommandArg()): # type: ignore
     if number := args.extract_plain_text():  # noqa: F841
         async with httpx.AsyncClient() as client:
-            link_train_number = API.api_rail_re + 'emu/' + number.upper()
-            response = await client.get(link_train_number)
-            data = json.loads(response.text)
-            num = 0
-            final_result = ""
-            while num < 8:
-                result = data[num]['train_no']
-                time = data[num]['date']
-                final_result += time + '：' +result + "\n"
-                num += 1
-                print_out = number.upper() + '近8次担当的车次为：\n' + final_result
+            try:
+                link_train_number = API.api_rail_re + 'emu/' + number.upper()
+                response = await client.get(link_train_number)
+                data = json.loads(response.text)
+                num = 0
+                final_result = ""
+                while num < 8:
+                    result = data[num]['train_no']
+                    time = data[num]['date']
+                    final_result += time + '：' +result + "\n"
+                    num += 1
+                    print_out = number.upper() + '近8次担当的车次为：\n' + final_result
+
+            except json.JSONDecodeError:
+                print_out = "输入的动车组车组号格式错误！"
+            except Exception as error:
+                print_out = "发生异常，" + error
+
             await train_number.finish(print_out) # type: ignore
     else:
         await train_number.finish("请输入车次")
