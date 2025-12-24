@@ -9,7 +9,7 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/leaf2006/nonebot-plugin-railwaytools?style=flat-square)
 ![GitHub License](https://img.shields.io/github/license/leaf2006/nonebot-plugin-railwaytools?style=flat-square)
 ![GitHub last commit](https://img.shields.io/github/last-commit/leaf2006/nonebot-plugin-railwaytools?style=flat-square)
-![Static Badge](https://img.shields.io/badge/Python-%3E%3D3.8-blue?style=flat-square)
+![Static Badge](https://img.shields.io/badge/Python-%3E%3D3.9-blue?style=flat-square)
 ![PyPI - Version](https://img.shields.io/pypi/v/nonebot-plugin-railwaytools?style=flat-square)
 
 
@@ -23,7 +23,7 @@
 ### 这是一个火车迷也许觉得很好用的铁路工具箱，具有多种功能。
 
 ## Required 🔨
-- Python >= 3.8
+- Python >= 3.9
 
 - 需提前安装以下依赖库：
 ```sh

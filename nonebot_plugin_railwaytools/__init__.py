@@ -54,7 +54,7 @@ async def handle_information_helper():
         "⑥ 帮助：/帮助 或 /help \n \n",
         "更多功能正在开发中，尽情期待！ \n",
         "------------------------------ \n \n",
-        "Powered by Nonebot2 and Onebot v11\n",
+        "Powered by Nonebot2\n",
         "Copyright © Leaf developer 2023-2026"
 
     ]) # type: ignore
