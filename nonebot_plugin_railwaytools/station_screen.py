@@ -13,7 +13,6 @@ from nonebot.rule import to_me  # type: ignore
 from .api import API  
 
 station_screen = on_command("大屏",aliases={"dp","车站大屏"},priority=5,block=True)
-
 def time_Formatter_2(time) -> str: # 格式化时间，2025-12-17 14:50:00 -> 14:50
     return time[11:16]
 
@@ -60,12 +59,8 @@ async def handle_station_screen(args: Message = CommandArg()):
 
             else:
                 await station_screen.finish("您输入的车站名不存在或未收录，请重新输入！")
+                
     
     else:
         await station_screen.finish("请输入正确的车站名！（如：上海）")
-                
-                
-
-            
-
 

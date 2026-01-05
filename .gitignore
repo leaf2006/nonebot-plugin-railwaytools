@@ -146,5 +146,6 @@ nonebot_plugin_railwaytools/__pycache__
 nonebot_plugin_railwaytools/config.py
 .env.dev
 .env.prod
+poetry.lock
 
 # End of https://www.toptal.com/developers/gitignore/api/python

@@ -45,7 +45,11 @@ async def handle_train_info(args: Message = CommandArg()): # type: ignore
                     link_emu_number = API.api_rail_re + "train/" + info_data["trainCode"]
                     res_info_EMU = await client.get(link_emu_number)
                     info_EMU_code = json.loads(res_info_EMU.text)
-                    jiaolu_Train_style = EMU_code_formatter(info_EMU_code[0]['emu_no'])
+                    
+                    if info_EMU_code[0]['date'] == info_EMU_code[1]['date']: # 判定是否重联
+                        jiaolu_Train_style = f"{EMU_code_formatter(info_EMU_code[0]['emu_no'])}与{EMU_code_formatter(info_EMU_code[1]['emu_no'])}重联"
+                    else:
+                        jiaolu_Train_style = EMU_code_formatter(info_EMU_code[0]['emu_no'])
 
                 else:
                     jiaolu_Train_style = stop_time[0]["jiaolu_train_style"] # 车底类型
