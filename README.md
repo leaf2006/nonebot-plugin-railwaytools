@@ -157,7 +157,7 @@ example:
 更多功能正在开发中，尽情期待！ 
 ------------------------------ 
  
-Powered by Nonebot2 and Onebot v11
+Powered by Nonebot2
 Copyright © Leaf developer 2023-2025
 ```
 
@@ -187,6 +187,7 @@ Copyright © Leaf developer 2023-2025
 - 动车组交路数据来源于：https://rail.re
 - 机车户口照图片来源于下关站：http://www.xiaguanzhan.com/
 - 列车查询数据来源于12306
+- 车站大屏数据来源于第三方API
 
 
 <div align="center">

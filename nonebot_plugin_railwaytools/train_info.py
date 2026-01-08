@@ -21,7 +21,8 @@ def EMU_code_formatter(str): # 格式化动车组车号 CRH2A2001 -> CRH2A-2001
 @train_info.handle() # 通过车次查询列车具体信息，不只是能查询动车组，普速列车也可查询
 async def handle_train_info(args: Message = CommandArg()): # type: ignore
     if train_Number_in_Info := args.extract_plain_text():
-        async with httpx.AsyncClient() as client:
+
+        async with httpx.AsyncClient(headers=API.headers) as client:
 
             toDay = datetime.date.today().strftime("%Y%m%d") #获取今日时间，以%Y%m%d的格式形式输出
             
@@ -45,14 +46,17 @@ async def handle_train_info(args: Message = CommandArg()): # type: ignore
                     link_emu_number = API.api_rail_re + "train/" + info_data["trainCode"]
                     res_info_EMU = await client.get(link_emu_number)
                     info_EMU_code = json.loads(res_info_EMU.text)
-                    
-                    if info_EMU_code[0]['date'] == info_EMU_code[1]['date']: # 判定是否重联
-                        jiaolu_Train_style = f"{EMU_code_formatter(info_EMU_code[0]['emu_no'])}与{EMU_code_formatter(info_EMU_code[1]['emu_no'])}重联"
+                    if res_info_EMU.status_code == 404 or not info_EMU_code:
+                        jiaolu_Train_style = " " # Bug fix：判断rail.re的数据库里有没有这个车次的信息，没有的话就给车型信息赋一个空的值
                     else:
-                        jiaolu_Train_style = EMU_code_formatter(info_EMU_code[0]['emu_no'])
+                        if info_EMU_code[0]['date'] == info_EMU_code[1]['date']: # 判定是否重联
+                            jiaolu_Train_style = f"{EMU_code_formatter(info_EMU_code[0]['emu_no'])}与{EMU_code_formatter(info_EMU_code[1]['emu_no'])}重联"
+                        else:
+                            jiaolu_Train_style = EMU_code_formatter(info_EMU_code[0]['emu_no'])
 
                 else:
                     jiaolu_Train_style = stop_time[0]["jiaolu_train_style"] # 车底类型
+
                 jiaolu_Dept_train = stop_time[0]["jiaolu_dept_train"] # 车底配属
 
                 stop_inf = []

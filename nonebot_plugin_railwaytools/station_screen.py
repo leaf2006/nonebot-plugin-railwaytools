@@ -19,7 +19,7 @@ def time_Formatter_2(time) -> str: # 格式化时间，2025-12-17 14:50:00 -> 14
 @station_screen.handle()
 async def handle_station_screen(args: Message = CommandArg()):
     if station_Name_input := args.extract_plain_text():
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(headers=API.headers) as client:
             link_Station_screen = API.api_station_screen + station_Name_input
             res_Train_list = await client.get(link_Station_screen)
             res_data = json.loads(res_Train_list.text)

@@ -21,7 +21,7 @@ train_number = on_command("车次",aliases={"cc", "查车次"}, priority=5,block
 @emu_number.handle()
 async def handle_emu_number(args: Message = CommandArg()): # type: ignore
     if number := args.extract_plain_text():
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(headers=API.headers) as client:
             try:
                 link_emu_number = API.api_rail_re + 'train/' + number.upper()
                 response = await client.get(link_emu_number)
@@ -60,7 +60,7 @@ async def handle_emu_number(args: Message = CommandArg()): # type: ignore
 @train_number.handle() #通过车组号查询车次
 async def handle_train_number(args: Message = CommandArg()): # type: ignore
     if number := args.extract_plain_text():  # noqa: F841
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(headers=API.headers) as client:
             try:
                 link_train_number = API.api_rail_re + 'emu/' + number.upper()
                 response = await client.get(link_train_number)
