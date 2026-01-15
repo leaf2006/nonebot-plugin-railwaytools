@@ -1,13 +1,14 @@
 # Copyright © Leaf developer 2023-2026
 # 本文件负责实现“车站大屏”功能，使用第三方API，仅供参考，请勿用于实际乘车
 
+# TODO:station screen功能因API使用方式变动需要重写
+
 import json
 import datetime  
 import httpx
 from nonebot import on_command   # type: ignore
 from nonebot.adapters.onebot.v11 import Message, MessageSegment   # type: ignore
 from nonebot.plugin import PluginMetadata  # type: ignore
-from .config import Config
 from nonebot.params import CommandArg  # type: ignore
 from nonebot.rule import to_me  # type: ignore
 from .api import API  

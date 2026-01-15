@@ -7,17 +7,17 @@ import httpx
 from nonebot import on_command   # type: ignore
 from nonebot.adapters.onebot.v11 import Message, MessageSegment   # type: ignore
 from nonebot.plugin import PluginMetadata  # type: ignore
-from .config import Config
 from nonebot.params import CommandArg  # type: ignore
 from nonebot.rule import to_me  # type: ignore
+from .utils import utils
 from .api import API  
 
 train_info = on_command("列车查询",aliases={"cx","查询"},priority=5,block=True)
-def time_Formatter_1(time) -> str: # 格式化时间，1145 -> 11:45
-    return time[:2] + ":" + time[2:]
+# def time_Formatter_1(time) -> str: # 格式化时间，1145 -> 11:45
+#     return time[:2] + ":" + time[2:]
 
-def EMU_code_formatter(str): # 格式化动车组车号 CRH2A2001 -> CRH2A-2001
-    return str[:-4] + "-" + str[-4:]
+# def EMU_code_formatter(str): # 格式化动车组车号 CRH2A2001 -> CRH2A-2001
+#     return str[:-4] + "-" + str[-4:]
 @train_info.handle() # 通过车次查询列车具体信息，不只是能查询动车组，普速列车也可查询
 async def handle_train_info(args: Message = CommandArg()): # type: ignore
     if train_Number_in_Info := args.extract_plain_text():
@@ -50,9 +50,9 @@ async def handle_train_info(args: Message = CommandArg()): # type: ignore
                         jiaolu_Train_style = " " # Bug fix：判断rail.re的数据库里有没有这个车次的信息，没有的话就给车型信息赋一个空的值
                     else:
                         if info_EMU_code[0]['date'] == info_EMU_code[1]['date']: # 判定是否重联
-                            jiaolu_Train_style = f"{EMU_code_formatter(info_EMU_code[0]['emu_no'])}与{EMU_code_formatter(info_EMU_code[1]['emu_no'])}重联"
+                            jiaolu_Train_style = f"{utils.EMU_code_formatter(info_EMU_code[0]['emu_no'])}与{utils.EMU_code_formatter(info_EMU_code[1]['emu_no'])}重联"
                         else:
-                            jiaolu_Train_style = EMU_code_formatter(info_EMU_code[0]['emu_no'])
+                            jiaolu_Train_style = utils.EMU_code_formatter(info_EMU_code[0]['emu_no'])
 
                 else:
                     jiaolu_Train_style = stop_time[0]["jiaolu_train_style"] # 车底类型
@@ -62,11 +62,19 @@ async def handle_train_info(args: Message = CommandArg()): # type: ignore
                 stop_inf = []
                 stop_dict = {}
 
-                for stop in stop_time: # 遍历该列车的所有站点、到点、发点、停车时间
+                for i, stop in enumerate(stop_time): # 遍历该列车的所有站点、到点、发点、停车时间
                     station = stop['stationName']
-                    arrive_time = time_Formatter_1(stop['arriveTime'])
-                    start_time = time_Formatter_1(stop['startTime'])
+                    arrive_time = utils.time_Formatter_1(stop['arriveTime'])
+                    start_time = utils.time_Formatter_1(stop['startTime'])
                     stopover_time = stop['stopover_time'] + "分"
+
+                    if i == 0: # 判断始发/终到站，给不存在的到点/发点变成“--:--”
+                        arrive_time = "--:--"
+                        stopover_time = "--分" 
+                    elif i == len(stop_time) -1:
+                        start_time = "--:--"
+                        stopover_time = "--分"
+
                     stop_dict.setdefault("站点",station)
                     stop_dict.setdefault("到点",arrive_time)
                     stop_dict.setdefault("发点",start_time)
@@ -75,10 +83,10 @@ async def handle_train_info(args: Message = CommandArg()): # type: ignore
                     stop_dict = {}
 
                 station_result = ""
-                station_result_number = 1 # 给时刻表标上序号
+                count = 1 # 给时刻表标上序号
                 for stop in stop_inf: # 想办法整出时刻表的结果，最后将结果添加到Message中去
-                    station_result += str(station_result_number) + "." + stop['站点'] + "：" + stop['到点'] + "到," + stop['发点'] + "开，停车" + stop['停车时间'] + "\n"
-                    station_result_number += 1
+                    station_result += str(count) + "." + stop['站点'] + "：" + stop['到点'] + "到," + stop['发点'] + "开，停车" + stop['停车时间'] + "\n"
+                    count += 1
 
                 train_info_result = Message([ #结果Message
                     "车次：",train_Number_in_Info.upper(),
@@ -97,7 +105,7 @@ async def handle_train_info(args: Message = CommandArg()): # type: ignore
                 train_info_result = "发生异常：" + error
 
             await train_info.finish(train_info_result)
+             
 
     else:
         await train_info.finish("请输入正确的列车车次！（如：Z99）")
-

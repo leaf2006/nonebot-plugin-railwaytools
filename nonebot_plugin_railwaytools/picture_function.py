@@ -6,13 +6,13 @@ from httpx import AsyncClient
 from nonebot import on_command   # type: ignore
 from nonebot.adapters.onebot.v11 import Message, MessageSegment   # type: ignore
 from nonebot.plugin import PluginMetadata  # type: ignore
-from .config import Config
 from nonebot.params import CommandArg  # type: ignore
 from nonebot.rule import to_me  # type: ignore
 from .api import API  
 
 xiaguanzhan_photo = on_command("下关站",aliases={"xgz"},priority=5,block=True)
 EMU_route_schedule = on_command("交路表",aliases={"jlb"},priority=5,block=True)
+
 @xiaguanzhan_photo.handle() #查询下关站列车户口照
 async def handle_xiaguanzhan_photo(args: Message = CommandArg()): # type: ignore
     if number := args.extract_plain_text():

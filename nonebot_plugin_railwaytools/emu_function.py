@@ -6,13 +6,13 @@ import json
 from nonebot import on_command   # type: ignore
 from nonebot.adapters.onebot.v11 import Message, MessageSegment   # type: ignore
 from nonebot.plugin import PluginMetadata  # type: ignore
-from .config import Config
 from nonebot.params import CommandArg  # type: ignore
 from nonebot.rule import to_me  # type: ignore
+from .utils import utils
 from .api import API  
 
-def EMU_code_formatter(str): # 格式化动车组车号 CRH2A2001 -> CRH2A-2001
-    return str[:-4] + "-" + str[-4:]
+# def EMU_code_formatter(str): # 格式化动车组车号 CRH2A2001 -> CRH2A-2001
+#     return str[:-4] + "-" + str[-4:]
 
 announce = "数据来源：rail.re"
 
@@ -31,7 +31,7 @@ async def handle_emu_number(args: Message = CommandArg()): # type: ignore
                 final_data = ""
                 for i in range(num):
                     if i <= 7:
-                        emu_no = EMU_code_formatter(data[i]['emu_no'])
+                        emu_no = utils.EMU_code_formatter(data[i]['emu_no'])
                         date = data[i]['date']
                         final_data += date + '：' + emu_no + "\n"
                         count += 1
