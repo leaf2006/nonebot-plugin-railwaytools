@@ -6,13 +6,11 @@ from nonebot import on_command   # type: ignore
 from nonebot.adapters.onebot.v11 import Message, MessageSegment   # type: ignore
 from nonebot.plugin import PluginMetadata  # type: ignore
 from nonebot.params import CommandArg  # type: ignore
-# from .config import Config
 from nonebot.rule import to_me  # type: ignore
 from .emu_function import handle_emu_number , handle_train_number
 from .picture_function import handle_xiaguanzhan_photo , handle_EMU_route_schedule
 from .train_info import handle_train_info
-# from .station_screen import handle_station_screen
-# TODO:station screen功能因API使用方式变动需要重写
+from .station_screen import handle_station_screen
 
 # 插件配置页
 __plugin_meta__ = PluginMetadata(
@@ -29,10 +27,6 @@ __plugin_meta__ = PluginMetadata(
 
     type="application",
     # 发布必填，当前有效类型有：`library`（为其他插件编写提供功能），`application`（向机器人用户提供功能）。
-
-
-    # config=Config,
-    # # 插件配置项类，如无需配置可不填写。
 
     homepage="https://github.com/leaf2006/nonebot-plugin-railwaytools",
     # 发布必填。
@@ -52,8 +46,8 @@ async def handle_information_helper():
         "② 通过动车组车组号查询担当车次：/车次 或 /cc （例如：/车次 CRH2A-2001） \n \n",
         "③ 通过车号查询下关站机车户口照：/下关站 或 /xgz （例如：/下关站 DF7C-5030） \n \n",
         "④ 通过列车车次查询该车次的始发终到、担当客运段、车型信息、配属以及具体时刻表，同时支持动车组与普速列车：/查询 或 /cx （例如：/查询 Z99）\n \n"
-        # "⑤ 通过车站名称查看车站大屏：/大屏 或 /dp （例如：/大屏 上海）\n \n"
-        "⑤ 帮助：/帮助 或 /help \n \n",
+        "⑤ 通过车站名称查看车站大屏：/大屏 或 /dp （例如：/大屏 上海）\n \n"
+        "⑥ 帮助：/帮助 或 /help \n \n",
         "更多功能正在开发中，尽情期待！ \n",
         "------------------------------ \n \n",
         "Powered by Nonebot2\n",
