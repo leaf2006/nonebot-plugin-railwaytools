@@ -11,6 +11,8 @@ from .emu_function import handle_emu_number , handle_train_number
 from .picture_function import handle_xiaguanzhan_photo , handle_EMU_route_schedule
 from .train_info import handle_train_info
 from .station_screen import handle_station_screen
+from .route_info import handle_route_info
+from .station_info import handle_station_info
 
 # 插件配置页
 __plugin_meta__ = PluginMetadata(
@@ -19,9 +21,11 @@ __plugin_meta__ = PluginMetadata(
     usage="""
     /车号 [动车组车次] - 通过车次查询担当的动车组车组号
     /车次 [动车组车组号] - 通过动车组车组号查询担当车次
-    /下关站 [机车车号] - 通过车号查询下关站机车户口照
     /查询 [列车车次] - 通过列车车次查询该车次的始发终到、担当客运段、车型信息、配属以及具体时刻表
     /大屏 [车站名称] - 通过车站名称查看车站大屏
+    /线路 [线路名称] - 查询某条铁路基本信息
+    /车站 [车站名称] - 查询某车站基本信息
+    /下关站 [机车车号] - 通过车号查看下关站机车户口照
     /help - 查看帮助信息
     """,
 
@@ -44,10 +48,12 @@ async def handle_information_helper():
         "----------使用方法----------\n",
         "① 通过车次查询担当的动车组车组号：/车号 或 /ch （例如：/车号 D3211） \n \n",
         "② 通过动车组车组号查询担当车次：/车次 或 /cc （例如：/车次 CRH2A-2001） \n \n",
-        "③ 通过车号查询下关站机车户口照：/下关站 或 /xgz （例如：/下关站 DF7C-5030） \n \n",
-        "④ 通过列车车次查询该车次的始发终到、担当客运段、车型信息、配属以及具体时刻表，同时支持动车组与普速列车：/查询 或 /cx （例如：/查询 Z99）\n \n"
-        "⑤ 通过车站名称查看车站大屏：/大屏 或 /dp （例如：/大屏 上海）\n \n"
-        "⑥ 帮助：/帮助 或 /help \n \n",
+        "③ 通过列车车次查询该车次的始发终到、担当客运段、车型信息、配属以及具体时刻表，同时支持动车组与普速列车：/查询 或 /cx （例如：/查询 Z99）\n \n"
+        "④ 通过车站名称查看车站大屏：/大屏 或 /dp （例如：/大屏 上海）\n \n"
+        "⑤ 查询某条铁路基本信息：/线路 或 /xl （例如：/线路 宣杭铁路） \n \n"
+        "⑥ 查询某车站基本信息：/车站 或 /cz （例如：/车站 上海） \n \n"
+        "⑦ 通过车号查询下关站机车户口照：/下关站 或 /xgz （例如：/下关站 DF7C-5030） \n \n",
+        "⑧ 帮助：/帮助 或 /help \n \n",
         "更多功能正在开发中，尽情期待！ \n",
         "------------------------------ \n \n",
         "Powered by Nonebot2\n",
