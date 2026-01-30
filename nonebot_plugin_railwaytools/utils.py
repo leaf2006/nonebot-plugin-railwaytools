@@ -13,7 +13,6 @@ class utils:
     def time_Formatter_2(time) -> str:
         """格式化时间，2025-12-17 14:50:00 -> 14:50"""
         return time[11:16]
-
     def EMU_code_formatter(str):
         """格式化动车组车号 CRH2A2001 -> CRH2A-2001"""
         return str[:-4] + "-" + str[-4:]
