@@ -112,6 +112,8 @@ async def handle_route_info(args: Message = CommandArg()):
 
         except (httpx.ReadTimeout,httpx.ConnectTimeout):
             route_info_result = "请求超时，请稍等一下再试"
+        except Exception as error:
+            route_info_result = "发生异常：" + str(error)
 
         
         await route_info.finish(route_info_result)

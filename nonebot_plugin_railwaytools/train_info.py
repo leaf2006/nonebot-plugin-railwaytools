@@ -17,8 +17,6 @@ train_info = on_command("列车查询",aliases={"cx","查询"},priority=5,block=
 
 @train_info.handle() # 通过车次查询列车具体信息，不只是能查询动车组，普速列车也可查询
 async def handle_train_info(args: Message = CommandArg()): # type: ignore
-    # TODO:添加二级参数 -实时（如：/查询 K165 -实时），可以查询该车次的正晚点情况，以及当前正在哪个区间运行
-    # 构想：
     if train_number_input := args.extract_plain_text(): 
 
         is_real_time_query = False # 默认参数为False
@@ -87,17 +85,18 @@ async def handle_train_info(args: Message = CommandArg()): # type: ignore
                             jiaolu_train_style = utils.EMU_code_formatter(info_EMU_code[0]['emu_no'])
 
                 else:
-                    jiaolu_train_style = stop_time[0]["jiaolu_train_style"] # 车底类型
+                    jiaolu_train_style = stop_time[0]["jiaolu_train_style"] # 车底类型（普通车）
 
                 jiaolu_dept_train = stop_time[0]["jiaolu_dept_train"] # 车底配属
 
                 if request_dates == toDay:
-                    train_schedule_info = f"{train_code}次{datetime.date.today().strftime("%m月%d日")}正常开行"
+                    train_schedule_info = f"{train_code}次{datetime.date.today().strftime("%m月%d日")}{start_station_name}方面正常开行"
                 else:
                     train_schedule_info = f"{train_code}次{datetime.date.today().strftime("%m月%d日")}{start_station_name}方面不开行或已停运，请关注车站公告"
 
                 stop_inf = []
                 stop_dict = {}
+
 
                 for i, stop in enumerate(stop_time): # 遍历该列车的所有站点、到点、发点、停车时间
                     station = stop['stationName']
@@ -105,11 +104,13 @@ async def handle_train_info(args: Message = CommandArg()): # type: ignore
                     start_time = utils.time_Formatter_1(stop['startTime'])
                     stopover_time = stop['stopover_time'] + "分"
                     ticketDelay = stop['ticketDelay']
+                    day_difference = stop['dayDifference']
+                    stop_time_count = len(stop_time)
 
                     if i == 0: # 判断始发/终到站，给不存在的到点/发点变成“--:--”
                         arrive_time = "--:--"
                         stopover_time = "--分" 
-                    elif i == len(stop_time) -1:
+                    elif i == stop_time_count -1:
                         start_time = "--:--"
                         stopover_time = "--分"
                     else:
@@ -124,45 +125,59 @@ async def handle_train_info(args: Message = CommandArg()): # type: ignore
                     stop_dict.setdefault("到点",arrive_time)
                     stop_dict.setdefault("发点",start_time)
                     stop_dict.setdefault("停车时间",stopover_time)
-                    # stop_dict.setdefault("晚点",ticketDelay)
+                    stop_dict.setdefault("day_difference",day_difference)
                     stop_inf.append(stop_dict)
                     stop_dict = {}
 
-                station_result = ""
-                count = 1 # 给时刻表标上序号
-
-                if is_real_time_query == True: # 定位当前列车在哪个站，仅限实时模式可用
-                    now_time = datetime.datetime.now().strftime("%H:%M") # 获取当前时间：XX:XX
-                    end_station_count = len(stop_time) - 1 
+                if is_real_time_query == True:
+                    now_time = datetime.datetime.now().strftime("%H:%M")
+                    end_station_count = stop_time_count - 1
+                    now_station_count = 0
+                    train_arrival_status = ""
                     if now_time < utils.time_Formatter_1(stop_time[0]['startTime']):
-                        train_arrival_status = f"列车始发站待发"
-                    elif now_time > utils.time_Formatter_1(stop_time[end_station_count]['arriveTime']):
-                        train_arrival_status = f"列车已经到达终点站"
+                        train_arrival_status = "列车始发站待发"
+                    elif now_time > utils.time_Formatter_1(stop_time[end_station_count]['arriveTime']) and stop_time[end_station_count]['dayDifference'] == 0:
+                        train_arrival_status = "列车已经到达终点站"
+                        now_station_count = end_station_count
                     else:
-                        for station in range(len(stop_time)):
+                        for station in range(stop_time_count-1):
                             if utils.time_Formatter_1(stop_time[station]['startTime']) < now_time and utils.time_Formatter_1(stop_time[station + 1]['arriveTime']) > now_time:
                                 now_station = stop_time[station + 1]['stationName']
                                 train_arrival_status = f"列车正在前往{now_station}站"
-                                break               
+                                now_station_count = station
+                                break
                 else:
                     train_arrival_status = ""
 
-                for stop in stop_inf: # 想办法整出时刻表的结果，最后将结果添加到Message中去
+                station_result = ""
+                count = 1 # 给时刻表标上序号
+                # day_difference_buffer = 0
+                # day_differences = [int(stop.get('day_difference', 0)) for stop in stop_inf]
+                for i,stop in enumerate(stop_inf): # 想办法整出时刻表的结果，最后将结果添加到Message中去
+                    # day_difference_output = ""
 
                     if is_real_time_query == True:
-                        
-                        if stop['晚点'] == "0":
-                            delay = "，正点运行"
-                        elif request_dates != toDay:
+                        if request_dates != toDay:
                             delay = ""
                         else:
-                            delay = f"，晚点{stop['晚点']}分"
-                            
+                            if stop['晚点'] == "0" and i <= now_station_count:
+                                delay = "，正点运行"
+                            elif stop['晚点'] == "0" and i > now_station_count:
+                                delay = "，预计正点"
+                            else:
+                                delay = f"，晚点{stop['晚点']}分"
+
                     else:
                         delay = ""
+
+                    # current_day_diff = day_differences[i]
+                    # next_day_diff = day_differences[i+1] if i+1 < len(day_differences) else current_day_diff
+                    # if current_day_diff != day_difference_buffer:
+                    #     day_difference_buffer = current_day_diff
+                    #     day_difference_output = f"（+{day_difference_buffer}天）\n"
+                    
                     station_result += str(count) + "." + stop['站点'] + "：" + stop['到点'] + "到," + stop['发点'] + "开，停车" + stop['停车时间'] + delay + "\n"
                     count += 1
-
 
                 train_info_output = Message([ # 结果Message
                     "车次：",train_code,
@@ -189,10 +204,10 @@ async def handle_train_info(args: Message = CommandArg()): # type: ignore
                     "请重新输入！",
                 ])
             except Exception as error:
-                train_info_output = "发生异常：" + error
+                train_info_output = "发生异常：" + str(error)
 
             await train_info.finish(train_info_output)
              
 
     else:
-        await train_info.finish("请输入正确的列车车次！（如：Z99）")
+        await train_info.finish("请输入正确的列车车次！（如：Z225）")

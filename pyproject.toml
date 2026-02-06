@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-plugin-railwaytools"
-version = "2.2.0"
+version = "2.2.1"
 description = "这是一个火车迷也许觉得很好用的铁路机器人工具箱"
 authors = [
     { name = "leaf2006", email = "leafdeveloper@qq.com" }

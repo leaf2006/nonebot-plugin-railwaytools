@@ -32,7 +32,7 @@ async def handle_station_screen(args: Message = CommandArg()):
             res_train_list = await client.get(url_station_screen)
             res_data = json.loads(res_train_list.text)
 
-            if "error" in res_data:
+            if "error" in res_data or not res_data['当前页车次列表']:
                 await station_screen.finish("您输入的车站名不存在或未收录，请重新输入！")
             
             else:

@@ -88,7 +88,7 @@ async def handle_train_number(args: Message = CommandArg()): # type: ignore
             except json.JSONDecodeError:
                 result = "输入的动车组车组号格式错误！"
             except Exception as error:
-                result = "发生异常，" + error
+                result = "发生异常，" + str(error)
 
             await train_number.finish(result) # type: ignore
     else:
