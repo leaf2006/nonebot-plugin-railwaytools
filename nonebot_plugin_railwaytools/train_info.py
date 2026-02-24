@@ -129,7 +129,7 @@ async def handle_train_info(args: Message = CommandArg()): # type: ignore
                     stop_inf.append(stop_dict)
                     stop_dict = {}
 
-                if is_real_time_query == True:
+                if is_real_time_query == True: # TODO 这里有问题
                     now_time = datetime.datetime.now().strftime("%H:%M")
                     end_station_count = stop_time_count - 1
                     now_station_count = 0

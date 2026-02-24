@@ -17,12 +17,16 @@ route_info = on_command("线路",aliases={"xl","线路信息","线","铁路"},pr
 async def handle_route_info(args: Message = CommandArg()):
     if route_name_input := args.extract_plain_text():
 
+        is_hsr = False
         if "铁路" in route_name_input: # 防止搜索出现错误
             route_name_input = route_name_input.replace("铁路","")
+            # is_hsr = False
         elif "线" in route_name_input:
             route_name_input = route_name_input.replace("线","")
+            # is_hsr = False
         elif "高铁" in route_name_input:
             route_name_input = route_name_input.replace("高铁","")
+            is_hsr = True # 判定是否为高速铁路
         else:
             pass
         
@@ -34,9 +38,15 @@ async def handle_route_info(args: Message = CommandArg()):
                 else:
                     for i in range(len(res_search_data)): # 搜索在所有搜索结果中属于“铁路”类别的条目
                         if res_search_data[i][1] == "RAIL":
-                            break
+                            if is_hsr == False:
+                                if "高速" not in res_search_data[i][2]:
+                                    break
+                            else:
+                                break
+
                     rail_id = res_search_data[i][0]
                 
+                # print(rail_id)
                 url_route_info = f"{API.api_cnrail_geogv}rail/{rail_id}?locale=zhcn"
                 route_info_res = await client.get(url_route_info)
                 route_info_raw_data = json.loads(route_info_res.text)
@@ -82,16 +92,22 @@ async def handle_route_info(args: Message = CommandArg()):
                     raw_diagram = route_info_data['diagram']['records']
                     # route_info_diagram = raw_diagram[num][3][0][2]
                     route_info_diagram = ""
-                    num = 1
+                    num = 0
+                    count = 1
                     count_raw_diagram = len(raw_diagram) - 1
                     while num < count_raw_diagram:
+                        if not raw_diagram[num][3] or raw_diagram[num][2] not in ['SST','MST']:
+                            num += 1
+                            continue
+
                         station_name = raw_diagram[num][3][0][2]
                         raw_kilometerage = str(raw_diagram[num][1])
                         if raw_kilometerage.strip() == "":
                             kilometerage = ""
                         else:
                             kilometerage = f"{raw_kilometerage}Km"
-                        route_info_diagram += f"【{str(num)}】{station_name}         {kilometerage} \n"
+                        route_info_diagram += f"【{str(count)}】{station_name}         {kilometerage} \n"
+                        count += 1
                         num += 1
 
 
