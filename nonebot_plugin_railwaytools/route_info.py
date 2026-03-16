@@ -4,6 +4,7 @@
 import httpx
 import json
 from nonebot import on_command   # type: ignore
+from nonebot.adapters import Event
 from nonebot.adapters.onebot.v11 import Message, MessageSegment   # type: ignore
 from nonebot.plugin import PluginMetadata  # type: ignore
 from nonebot.params import CommandArg  # type: ignore
@@ -14,7 +15,13 @@ from .api import API
 route_info = on_command("线路",aliases={"xl","线路信息","线","铁路"},priority=5,block=True)
 
 @route_info.handle()
-async def handle_route_info(args: Message = CommandArg()):
+async def handle_route_info(event:Event, args: Message = CommandArg()):
+    raw_message = str(event.get_message()).strip()
+    command_part = utils.get_command_part(raw_message)
+    valid_commands = ['线路','xl','线路信息','线','铁路']
+    if command_part not in valid_commands:
+        return
+        
     if route_name_input := args.extract_plain_text():
 
         is_hsr = False

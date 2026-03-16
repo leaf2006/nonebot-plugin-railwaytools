@@ -25,4 +25,13 @@ class utils:
             res_search_raw_data = json.loads(res_search.text)
             res_search_data = res_search_raw_data['data']
             return res_search_data
-            
+        
+    def get_command_part(raw_message):
+        space_index = raw_message.find(' ') # 找到空格所在的位置（空格用于分隔指令与参数）
+        if space_index != -1:
+            command_part = raw_message[:space_index]
+        else:
+            command_part = raw_message
+        
+        command_part = command_part.replace('/','')
+        return command_part

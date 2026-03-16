@@ -1,12 +1,14 @@
 # Copyright © Leaf developer 2023-2026
 # 本文件负责实现“通过动车组车次查询车组号”与“通过动车组车组号查询动车组车次”功能
-
+import re
 import httpx
 import json 
+from nonebot import on_regex
 from nonebot import on_command   # type: ignore
+from nonebot.adapters import Event
 from nonebot.adapters.onebot.v11 import Message, MessageSegment   # type: ignore
 from nonebot.plugin import PluginMetadata  # type: ignore
-from nonebot.params import CommandArg  # type: ignore
+from nonebot.params import RawCommand, CommandArg  # type: ignore
 from nonebot.rule import to_me  # type: ignore
 from .utils import utils
 from .api import API  
@@ -19,7 +21,13 @@ announce = "数据来源：rail.re"
 emu_number = on_command("车号",aliases={"ch", "查车号"}, priority=5,block=True)
 train_number = on_command("车次",aliases={"cc", "查车次"}, priority=5,block=True)
 @emu_number.handle()
-async def handle_emu_number(args: Message = CommandArg()): # type: ignore
+async def handle_emu_number(event:Event, args: Message = CommandArg()): # type: ignore
+    raw_message = str(event.get_message()).strip()
+    command_part = utils.get_command_part(raw_message)
+    valid_commands = ['车号','ch','查车号']
+    if command_part not in valid_commands:
+        return
+    
     if number := args.extract_plain_text():
         async with httpx.AsyncClient(headers=API.headers) as client:
             try:
@@ -58,7 +66,13 @@ async def handle_emu_number(args: Message = CommandArg()): # type: ignore
         await emu_number.finish("请输入车号")
 
 @train_number.handle() #通过车组号查询车次
-async def handle_train_number(args: Message = CommandArg()): # type: ignore
+async def handle_train_number(event = Event, args: Message = CommandArg()): # type: ignore
+    raw_message = str(event.get_message()).strip()
+    command_part = utils.get_command_part(raw_message)
+    valid_commands = ['车次','cc','查车次']
+    if command_part not in valid_commands:
+        return
+
     if number := args.extract_plain_text():  # noqa: F841
         async with httpx.AsyncClient(headers=API.headers) as client:
             try:
@@ -77,7 +91,7 @@ async def handle_train_number(args: Message = CommandArg()): # type: ignore
                     else:
                         pass
 
-                result = Message([
+                result = Message([ # TODO 异常处理有问题
                     "车组号",number.upper(),"近",str(count),"次担当的动车组车次为：\n",
                     "------------------------------\n",
                     final_data,

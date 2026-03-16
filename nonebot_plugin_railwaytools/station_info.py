@@ -3,7 +3,8 @@
 
 import httpx
 import json 
-from nonebot import on_command 
+from nonebot import on_command
+from nonebot.adapters import Event 
 from nonebot.adapters.onebot.v11 import Message, MessageSegment 
 from nonebot.plugin import PluginMetadata
 from nonebot.params import CommandArg 
@@ -14,7 +15,12 @@ from .api import API
 station_info = on_command("车站",aliases={"cz","车站信息","站"},priority=5,block=True)
 
 @station_info.handle()
-async def handle_station_info(args: Message = CommandArg()):
+async def handle_station_info(event:Event, args: Message = CommandArg()):
+    raw_message = str(event.get_message()).strip()
+    command_part = utils.get_command_part(raw_message)
+    valid_commands = ['车站','cz','车站信息','站']
+    if command_part not in valid_commands:
+        return    
     if station_name_input := args.extract_plain_text():
         if "站" in station_name_input: # 防止搜索出现问题
             station_name_input = station_name_input.replace("站","")

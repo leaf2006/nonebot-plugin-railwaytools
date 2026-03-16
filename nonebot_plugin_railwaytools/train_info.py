@@ -5,6 +5,7 @@ import json
 import datetime  
 import httpx
 from nonebot import on_command   # type: ignore
+from nonebot.adapters import Event
 from nonebot.adapters.onebot.v11 import Message, MessageSegment   # type: ignore
 from nonebot.plugin import PluginMetadata  # type: ignore
 from nonebot.params import CommandArg  # type: ignore
@@ -16,7 +17,13 @@ train_info = on_command("列车查询",aliases={"cx","查询"},priority=5,block=
 
 
 @train_info.handle() # 通过车次查询列车具体信息，不只是能查询动车组，普速列车也可查询
-async def handle_train_info(args: Message = CommandArg()): # type: ignore
+async def handle_train_info(event:Event, args: Message = CommandArg()): # type: ignore
+    raw_message = str(event.get_message()).strip()
+    command_part = utils.get_command_part(raw_message)
+    valid_commands = ['列车查询','cx','查询']
+    if command_part not in valid_commands:
+        return
+        
     if train_number_input := args.extract_plain_text(): 
 
         is_real_time_query = False # 默认参数为False
@@ -130,7 +137,7 @@ async def handle_train_info(args: Message = CommandArg()): # type: ignore
                     stop_inf.append(stop_dict)
                     stop_dict = {}
 
-                if is_real_time_query == True: # TODO 这里有问题
+                if is_real_time_query == True:
                     now_time = datetime.datetime.now().strftime("%H:%M")
                     end_station_count = stop_time_count - 1
                     now_station_count = 0

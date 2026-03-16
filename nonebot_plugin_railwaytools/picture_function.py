@@ -4,17 +4,25 @@
 import httpx
 from httpx import AsyncClient 
 from nonebot import on_command   # type: ignore
+from nonebot.adapters import Event
 from nonebot.adapters.onebot.v11 import Message, MessageSegment   # type: ignore
 from nonebot.plugin import PluginMetadata  # type: ignore
 from nonebot.params import CommandArg  # type: ignore
 from nonebot.rule import to_me  # type: ignore
+from .utils import utils
 from .api import API  
 
 xiaguanzhan_photo = on_command("下关站",aliases={"xgz"},priority=5,block=True)
 EMU_route_schedule = on_command("交路表",aliases={"jlb"},priority=5,block=True)
 
 @xiaguanzhan_photo.handle() #查询下关站列车户口照
-async def handle_xiaguanzhan_photo(args: Message = CommandArg()): # type: ignore
+async def handle_xiaguanzhan_photo(event:Event, args: Message = CommandArg()): # type: ignore
+    raw_message = str(event.get_message()).strip()
+    command_part = utils.get_command_part(raw_message)
+    valid_commands = ['下关站','xgz']
+    if command_part not in valid_commands:
+        return
+
     if number := args.extract_plain_text():
         await xiaguanzhan_photo.send("正在加载图片，时间可能略久...")
         photo = API.api_xiaguanzhan + number + ".jpg"
@@ -23,7 +31,13 @@ async def handle_xiaguanzhan_photo(args: Message = CommandArg()): # type: ignore
         await xiaguanzhan_photo.finish("请输入正确的车号!，如：DF7C-5030")
 
 @EMU_route_schedule.handle() # 获取动车组交路表，还是来源于rail.re
-async def handle_EMU_route_schedule(args: Message = CommandArg()):
+async def handle_EMU_route_schedule(event:Event, args: Message = CommandArg()):
+    raw_message = str(event.get_message()).strip()
+    command_part = utils.get_command_part(raw_message)
+    valid_commands = ['交路表','jlb']
+    if command_part not in valid_commands:
+        return
+    
     if train_Number_input := args.extract_plain_text():
         res_EMU_route_schedule = API.api_EMU_route_schedule + train_Number_input.upper() + ".png"
         EMU_Route_schedule_result = Message([

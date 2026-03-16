@@ -5,6 +5,7 @@ import json
 import datetime  
 import httpx
 from nonebot import on_command   # type: ignore
+from nonebot.adapters import Event
 from nonebot.adapters.onebot.v11 import Message, MessageSegment   # type: ignore
 from nonebot.plugin import PluginMetadata  # type: ignore
 from nonebot.params import CommandArg  # type: ignore
@@ -17,7 +18,13 @@ station_screen = on_command("大屏",aliases={"dp","车站大屏"},priority=5,bl
 #     return time[11:16]
 
 @station_screen.handle()
-async def handle_station_screen(args: Message = CommandArg()):
+async def handle_station_screen(event:Event, args: Message = CommandArg()):
+    raw_message = str(event.get_message()).strip()
+    command_part = utils.get_command_part(raw_message)
+    valid_commands = ['大屏','dp','车站大屏']
+    if command_part not in valid_commands:
+        return
+        
     if station_name_input := args.extract_plain_text():
 
         if "站" in station_name_input:
