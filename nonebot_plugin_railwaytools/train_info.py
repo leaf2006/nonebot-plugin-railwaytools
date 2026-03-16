@@ -90,9 +90,10 @@ async def handle_train_info(args: Message = CommandArg()): # type: ignore
                 jiaolu_dept_train = stop_time[0]["jiaolu_dept_train"] # 车底配属
 
                 if request_dates == toDay:
-                    train_schedule_info = f"{train_code}次{datetime.date.today().strftime("%m月%d日")}{start_station_name}方面正常开行"
+                    current_date = datetime.date.today().strftime('%m月%d日') # Bug fixed：https://github.com/leaf2006/nonebot-plugin-railwaytools/issues/2
+                    train_schedule_info = f"{train_code}次{current_date}{start_station_name}方面正常开行"
                 else:
-                    train_schedule_info = f"{train_code}次{datetime.date.today().strftime("%m月%d日")}{start_station_name}方面不开行或已停运，请关注车站公告"
+                    train_schedule_info = f"{train_code}次{current_date}{start_station_name}方面不开行或已停运，请关注车站公告"
 
                 stop_inf = []
                 stop_dict = {}

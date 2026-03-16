@@ -52,7 +52,7 @@ async def handle_station_screen(args: Message = CommandArg()):
                         count += 1
 
                     else:
-                        pass
+                        break # 为什么我一直写成pass了
                 station_screen_message = Message([
                     f"【{station_name_input}站】车站大屏如下：\n \n",
                     result,
