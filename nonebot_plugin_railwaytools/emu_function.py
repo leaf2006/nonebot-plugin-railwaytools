@@ -42,6 +42,7 @@ async def handle_emu_number(event:Event, args: Message = CommandArg()): # type: 
                 num = len(data)
                 count = 0
                 final_data = ""
+                train_no = data[0]['train_no']
                 for i in range(num):
                     if i <= 7:
                         emu_no = utils.EMU_code_formatter(data[i]['emu_no'])
@@ -52,7 +53,7 @@ async def handle_emu_number(event:Event, args: Message = CommandArg()): # type: 
                         pass
                 
                 result = Message([
-                    number.upper(),"次列车近",str(count),"次担当的车组号为：\n",
+                    train_no,"次列车近",str(count),"次担当的车组号为：\n",
                     "------------------------------\n",
                     final_data,
                     "------------------------------\n \n",
@@ -91,6 +92,7 @@ async def handle_train_number(event = Event, args: Message = CommandArg()): # ty
                 num = len(data)
                 count = 0
                 final_data = ""
+                emu_number = utils.EMU_code_formatter(data[0]['emu_no'])
                 for i in range(num):
                     if i <= 7:
                         train_no = data[i]['train_no']
@@ -101,7 +103,7 @@ async def handle_train_number(event = Event, args: Message = CommandArg()): # ty
                         pass
                 
                 result = Message([ # TODO 异常处理有问题
-                    "车组号",number.upper(),"近",str(count),"次担当的动车组车次为：\n",
+                    "车组号",emu_number,"近",str(count),"次担当的动车组车次为：\n",
                     "------------------------------\n",
                     final_data,
                     "------------------------------\n \n",
