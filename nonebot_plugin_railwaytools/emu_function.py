@@ -34,6 +34,11 @@ async def handle_emu_number(event:Event, args: Message = CommandArg()): # type: 
                 link_emu_number = API.api_rail_re + 'train/' + number.upper()
                 response = await client.get(link_emu_number)
                 data = json.loads(response.text)
+
+                if not data:
+                    await train_number.send("未查询到相关信息")
+                    return # 防止再次报“FinishedException”错误
+
                 num = len(data)
                 count = 0
                 final_data = ""
@@ -45,7 +50,6 @@ async def handle_emu_number(event:Event, args: Message = CommandArg()): # type: 
                         count += 1
                     else:
                         pass
-
                 
                 result = Message([
                     number.upper(),"次列车近",str(count),"次担当的车组号为：\n",
@@ -79,6 +83,11 @@ async def handle_train_number(event = Event, args: Message = CommandArg()): # ty
                 link_train_number = API.api_rail_re + 'emu/' + number.upper()
                 response = await client.get(link_train_number)
                 data = json.loads(response.text)
+
+                if not data:
+                    await train_number.send("未查询到相关信息")
+                    return
+
                 num = len(data)
                 count = 0
                 final_data = ""
@@ -90,7 +99,7 @@ async def handle_train_number(event = Event, args: Message = CommandArg()): # ty
                         count += 1
                     else:
                         pass
-
+                
                 result = Message([ # TODO 异常处理有问题
                     "车组号",number.upper(),"近",str(count),"次担当的动车组车次为：\n",
                     "------------------------------\n",
