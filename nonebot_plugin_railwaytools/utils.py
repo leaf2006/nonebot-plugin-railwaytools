@@ -1,6 +1,7 @@
 import json
 import httpx
 import asyncio
+import traceback
 
 from .api import API
 
@@ -27,6 +28,9 @@ class utils:
             return res_search_data
         
     def get_command_part(raw_message):
+        """
+        获取命令部分
+        """
         space_index = raw_message.find(' ') # 找到空格所在的位置（空格用于分隔指令与参数）
         if space_index != -1:
             command_part = raw_message[:space_index]
@@ -35,3 +39,17 @@ class utils:
         
         command_part = command_part.replace('/','')
         return command_part
+    
+    def short_tb(exc: Exception) -> str:
+        """
+        用于精简TraceBack
+        """
+        te = traceback.TracebackException.from_exception(exc)
+        if te.stack:
+            last = te.stack[-1]
+            # 只保留最后一帧
+            frame = f'File "{last.filename}", line {last.lineno}, in {last.name}\n    {last.line}'
+        else:
+            frame = "No traceback frame"
+        exc_only = "".join(te.format_exception_only()).strip()
+        return f"{frame}\n{exc_only}"

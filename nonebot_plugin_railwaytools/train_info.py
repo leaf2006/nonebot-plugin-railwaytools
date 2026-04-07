@@ -4,7 +4,8 @@
 import json
 import datetime  
 import httpx
-from nonebot import on_command   # type: ignore
+import traceback
+from nonebot import on_command,logger   # type: ignore
 from nonebot.adapters import Event
 from nonebot.adapters.onebot.v11 import Message, MessageSegment   # type: ignore
 from nonebot.plugin import PluginMetadata  # type: ignore
@@ -14,7 +15,6 @@ from .utils import utils
 from .api import API  
 
 train_info = on_command("列车查询",aliases={"cx","查询"},priority=5,block=True)
-
 
 @train_info.handle() # 通过车次查询列车具体信息，不只是能查询动车组，普速列车也可查询
 async def handle_train_info(event:Event, args: Message = CommandArg()): # type: ignore
@@ -72,6 +72,7 @@ async def handle_train_info(event:Event, args: Message = CommandArg()): # type: 
 
                 # 对返回数据进行分析
                 stop_time = info_response_data['data']['trainDetail']['stopTime']
+                # 此处控制台会输出warning，但是可以忽略，因为是12306的问题
 
                 train_code = stop_time[0]['stationTrainCode'] # 车次
                 start_station_name = stop_time[0]['start_station_name'] # 始发站名
@@ -137,23 +138,35 @@ async def handle_train_info(event:Event, args: Message = CommandArg()): # type: 
                     stop_inf.append(stop_dict)
                     stop_dict = {}
 
-                if is_real_time_query == True:
+                if is_real_time_query == True: # Fix：修复当列车到达终点站后，train_arrival_status为""的情况
                     now_time = datetime.datetime.now().strftime("%H:%M")
                     end_station_count = stop_time_count - 1
                     now_station_count = 0
                     train_arrival_status = ""
                     if now_time < utils.time_Formatter_1(stop_time[0]['startTime']):
                         train_arrival_status = "列车始发站待发"
-                    elif now_time > utils.time_Formatter_1(stop_time[end_station_count]['arriveTime']) and stop_time[end_station_count]['dayDifference'] == 0:
-                        train_arrival_status = "列车已经到达终点站"
-                        now_station_count = end_station_count
                     else:
-                        for station in range(stop_time_count-1):
+                        is_matching = False
+                        for station in range(stop_time_count - 1):
+                            # 在两站之间
                             if utils.time_Formatter_1(stop_time[station]['startTime']) < now_time and utils.time_Formatter_1(stop_time[station + 1]['arriveTime']) > now_time:
+                                # 本站发点 < 现在时间 < 下一站的到点
                                 now_station = stop_time[station + 1]['stationName']
                                 train_arrival_status = f"列车正在前往{now_station}站"
                                 now_station_count = station
+                                is_matching = True
                                 break
+                            # 沿途站内停车
+                            elif utils.time_Formatter_1(stop_time[station]['arriveTime']) <= now_time and now_time <= utils.time_Formatter_1(stop_time[station]['startTime']):
+                                train_arrival_status = f"列车已经到达{stop_time[station]['stationName']}站"
+                                now_station_count = station
+                                is_matching = True
+                                break
+                        
+                        # 3. 如果循环结束都没匹配到，且时间已经过了到发车时间，则判定为已到终点
+                        if not is_matching:
+                            train_arrival_status = "列车已经到达终点站"
+                            now_station_count = end_station_count
                 else:
                     train_arrival_status = ""
 
@@ -177,12 +190,6 @@ async def handle_train_info(event:Event, args: Message = CommandArg()): # type: 
 
                     else:
                         delay = ""
-
-                    # current_day_diff = day_differences[i]
-                    # next_day_diff = day_differences[i+1] if i+1 < len(day_differences) else current_day_diff
-                    # if current_day_diff != day_difference_buffer:
-                    #     day_difference_buffer = current_day_diff
-                    #     day_difference_output = f"（+{day_difference_buffer}天）\n"
                     
                     station_result += str(count) + "." + stop['站点'] + "：" + stop['到点'] + "到," + stop['发点'] + "开，停车" + stop['停车时间'] + delay + "\n"
                     count += 1
@@ -201,7 +208,7 @@ async def handle_train_info(event:Event, args: Message = CommandArg()): # type: 
                     "数据来源：12306",
                 ]) # type: ignore
 
-            except KeyError:
+            except KeyError as error:
                 # train_info_output = "输入车次格式错误或者车次未收录，亦又可能是该车次近日不开行。请重新输入！"
                 train_info_output = Message([
                     "您输入的车次",train_number_input.upper(),"无法查询，可能是以下两种原因导致：\n",
@@ -211,11 +218,13 @@ async def handle_train_info(event:Event, args: Message = CommandArg()): # type: 
                     "------------------------------ \n",
                     "请重新输入！",
                 ])
+                logger.error(f"出现错误：{utils.short_tb(error)}")
+
             except Exception as error:
                 train_info_output = "发生异常：" + str(error)
 
             await train_info.finish(train_info_output)
-             
+            
 
     else:
         await train_info.finish("请输入正确的列车车次！（如：Z225）")
