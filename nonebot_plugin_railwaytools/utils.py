@@ -20,11 +20,10 @@ class utils:
 
     async def cnrail_search(input_text):
         """cnrail的搜索模块，获取rail id必用"""
-        url_search = f"{API.api_cnrail_geogv}match_feature/{input_text}?locale=zhcn&query-override" 
+        url_search = f"{API.api_cnrail_geogv}search?keyword={input_text}" 
         async with httpx.AsyncClient(headers=API.headers) as client:
             res_search = await client.get(url_search)
-            res_search_raw_data = json.loads(res_search.text)
-            res_search_data = res_search_raw_data['data']
+            res_search_data = json.loads(res_search.text) # Fixed:适配新版api调用方式
             return res_search_data
         
     def get_command_part(raw_message):

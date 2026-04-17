@@ -44,93 +44,65 @@ async def handle_route_info(event:Event, args: Message = CommandArg()):
                     await route_info.finish("未收录该线路或线路不存在，请重新输入！")
                 else:
                     for i in range(len(res_search_data)): # 搜索在所有搜索结果中属于“铁路”类别的条目
-                        if res_search_data[i][1] == "RAIL":
+                        search_query = res_search_data[i]['query']
+                        search_name = res_search_data[i]['name']
+                        if "rail/" in search_query:
                             if is_hsr == False:
-                                if "高速" not in res_search_data[i][2]:
+                                if "高速" not in search_name:
                                     break
                             else:
                                 break
 
-                    rail_id = res_search_data[i][0]
+                    rail_id = search_query.replace("rail/","") # 去除query中的前缀rail/，这部分将不作为rail_id使用
                 
-                # print(rail_id)
-                url_route_info = f"{API.api_cnrail_geogv}rail/{rail_id}?locale=zhcn"
+                url_route_info = f"{API.api_cnrail_geogv}feature/{rail_id}?locale=zhcn" # 已更新为新版调用方式
                 route_info_res = await client.get(url_route_info)
                 route_info_raw_data = json.loads(route_info_res.text)
                 route_info_data = route_info_raw_data['data']
 
                 route_info_name = route_info_data['name'] # 线路名称
 
-                if route_info_data['lineNum'] == "2": # 线路形态
+                if route_info_data['lines'] == "2": # 线路形态
                     route_info_linenum = "复线铁路"
-                elif route_info_data['lineNum'] == "1":
+                elif route_info_data['lines'] == "1":
                     route_info_linenum = "单线铁路"
                 else:
-                    route_info_linenum = route_info_data['lineNum']
+                    route_info_linenum = route_info_data['lines']
                 
-                if not route_info_data['designSpeed'] or route_info_data['designSpeed'].strip() == "null": # 设计时速
+                design_speed_raw = route_info_data.get("design_speed")
+                if not design_speed_raw or str(design_speed_raw).strip().lower() == "null":
                     route_info_designSpeed = "暂无数据"
                 else:
-                    route_info_designSpeed = route_info_data['designSpeed']
+                    route_info_designSpeed = str(design_speed_raw)
 
-                if route_info_data['railService'] == "F": # 服务类型
-                    route_info_railService = "货运"
-                elif route_info_data['railService'] == "P":
-                    route_info_railService = "客运"
-                elif route_info_data['railService'] == "PF":
-                    route_info_railService = "客货两用"
-                elif route_info_data['railService'] == "P2F1":
-                    route_info_railService = "客运为主，兼顾货运"
-                else:
-                    route_info_railService = route_info_data['railService']
+                route_info_railType = route_info_data['railtype'] # 新版模式
                 
-                if route_info_data['railType'] == "CONV": # 线路类型
-                    route_info_railType = "普速铁路"
-                elif route_info_data['railType'] == "RR":
-                    route_info_railType = "快速铁路"
-                elif route_info_data['railType'] == "HSR":
-                    route_info_railType = "高速铁路"
+                # 作者心还怪好的，新版调用方式的那个stations确实比原来的好
+                stations_list = route_info_data['stations']
+                if not stations_list or stations_list == "null":
+                    route_info_stations = "暂无沿途车站数据"
                 else:
-                    route_info_railType = route_info_data['railType']
-                
-                if route_info_data['diagram'] == "null":
-                    route_info_diagram = "暂无沿途车站数据"
-                else:
-                    raw_diagram = route_info_data['diagram']['records']
-                    # route_info_diagram = raw_diagram[num][3][0][2]
-                    route_info_diagram = ""
-                    num = 0
-                    count = 1
-                    count_raw_diagram = len(raw_diagram) - 1
-                    while num < count_raw_diagram:
-                        if not raw_diagram[num][3] or raw_diagram[num][2] not in ['SST','MST']:
-                            num += 1
-                            continue
-
-                        station_name = raw_diagram[num][3][0][2]
-                        raw_kilometerage = str(raw_diagram[num][1])
-                        if raw_kilometerage.strip() == "":
+                    route_info_stations = ""
+                    for counts in range(len(stations_list)):
+                        station_name = stations_list[counts]['name']
+                        kilometerage_raw = stations_list[counts]['mileage']
+                        if kilometerage_raw is None:
                             kilometerage = ""
                         else:
-                            kilometerage = f"{raw_kilometerage}Km"
-                        route_info_diagram += f"【{str(count)}】{station_name}         {kilometerage} \n"
-                        count += 1
-                        num += 1
+                            kilometerage = f"{kilometerage_raw}Km"
+                        route_info_stations += f"【{str(counts+1)}】{station_name}         {kilometerage} \n"
 
-
+                # 这里跟随原网站弃用“服务类型”
                 route_info_result = Message([
-                    # "线路名称：",route_info_name,"\n",
                     "【",route_info_name,"】线路信息：\n"
                     "线路类型：",route_info_railType,"\n",
-                    "服务类型：",route_info_railService,"\n",
                     "单/复线：",route_info_linenum,"\n",
                     "设计时速：",route_info_designSpeed,"\n \n",
                     "----------沿途车站----------\n",
-                    route_info_diagram,
+                    route_info_stations,
                     "------------------------------ \n \n",
                     "*本表所列起点终点为该线路里程接算站，里程为营业用运价里程，与线路实际运行长度并不相同\n"
                     "数据来源：cnrail.geogv.org",
-
                 ])
 
         except (httpx.ReadTimeout,httpx.ConnectTimeout):
@@ -138,7 +110,6 @@ async def handle_route_info(event:Event, args: Message = CommandArg()):
         except Exception as error:
             route_info_result = "发生异常：" + str(error)
 
-        
         await route_info.finish(route_info_result)
 
     else:
