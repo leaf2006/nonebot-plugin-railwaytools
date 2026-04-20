@@ -52,3 +52,41 @@ class utils:
             frame = "No traceback frame"
         exc_only = "".join(te.format_exception_only()).strip()
         return f"{frame}\n{exc_only}"
+    
+    def decrypt_cnrail_data(encrypted_str: str) -> dict:
+        """
+        解密 cnrail.geogv.org API 返回的混淆字符串
+        """
+
+        # 如果最外层包着多余的引号，先通过 json.loads 脱掉引号转为正常的内部字符串
+        if encrypted_str.startswith('"') and encrypted_str.endswith('"'):
+            try:
+                encrypted_str = json.loads(encrypted_str)
+            except json.JSONDecodeError:
+                pass
+        
+        if not encrypted_str:
+            return "ERR"
+        
+        key_length = ord(encrypted_str[0]) # 第一位字符的 ASCII 码值代表密钥的长度，如结果为\u0007则提取为7
+        key = encrypted_str[1:1+key_length] # 紧接着的key_length个字符是密钥
+        payload = encrypted_str[1+key_length:] # 剩下的都是加密过的密文
+
+        # 解密部分
+        decrypted_chars = []
+        for i, char in enumerate(payload):
+            key_char = key[i % len(key)]
+
+            # 密文字符 ASCII - 密钥字符 ASCII = 原文字符 ASCII
+            decrypted_char_code = ord(char) - ord(key_char)
+            decrypted_chars.append(chr(decrypted_char_code)) # 由ASCII解密为普通字符串
+        
+        decrypted_str = "".join(decrypted_chars)
+
+        try:
+            return json.loads(decrypted_str)
+        except json.JSONDecodeError:
+            return "ERR"
+
+
+

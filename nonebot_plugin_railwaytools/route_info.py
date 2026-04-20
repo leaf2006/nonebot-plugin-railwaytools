@@ -43,16 +43,15 @@ async def handle_route_info(event:Event, args: Message = CommandArg()):
                 if not res_search_data:
                     await route_info.finish("未收录该线路或线路不存在，请重新输入！")
                 else:
-                    for i in range(len(res_search_data)): # 搜索在所有搜索结果中属于“铁路”类别的条目
-                        search_query = res_search_data[i]['query']
-                        search_name = res_search_data[i]['name']
+                    for search_results in res_search_data: # 搜索在所有搜索结果中属于“铁路”类别的条目
+                        search_query = search_results['query']
+                        search_name = search_results['name']
                         if "rail/" in search_query:
                             if is_hsr == False:
                                 if "高速" not in search_name:
                                     break
                             else:
                                 break
-
                     rail_id = search_query.replace("rail/","") # 去除query中的前缀rail/，这部分将不作为rail_id使用
                 
                 url_route_info = f"{API.api_cnrail_geogv}feature/{rail_id}?locale=zhcn" # 已更新为新版调用方式
@@ -108,7 +107,7 @@ async def handle_route_info(event:Event, args: Message = CommandArg()):
         except (httpx.ReadTimeout,httpx.ConnectTimeout):
             route_info_result = "请求超时，请稍等一下再试"
         except Exception as error:
-            route_info_result = "发生异常：" + str(error)
+            route_info_result = "发生异常：" + str(error) # TODO
 
         await route_info.finish(route_info_result)
 

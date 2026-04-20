@@ -22,10 +22,14 @@ async def handle_station_info(event:Event, args: Message = CommandArg()):
     if command_part not in valid_commands:
         return    
     if station_name_input := args.extract_plain_text():
-        if "站" in station_name_input: # 防止搜索出现问题
+        is_metro_sta = False
+        if "地铁站" in station_name_input:
+            station_name_input = station_name_input.replace("地铁站","")
+            is_metro_sta = True
+        elif "站" in station_name_input: # 防止搜索出现问题
             station_name_input = station_name_input.replace("站","")
         elif "车站" in station_name_input:
-            station_name_input = station_name_input("车站","")
+            station_name_input = station_name_input.replace("车站","")
         else:
             pass
 
@@ -35,97 +39,91 @@ async def handle_station_info(event:Event, args: Message = CommandArg()):
                 if not res_search_data:
                     await station_info.finish("未收录该车站或车站不存在，请重新输入！")
                 else:
-                    for i in range(len(res_search_data)): # 搜索所有搜索结果中属于“车站”类别的 条目
-                        if res_search_data[i][2] == station_name_input and res_search_data[i][1] == "STATION":
-                            continue_search = False
-                            break
-                        else:
-                            continue_search = True
-                    
-                    if continue_search == True:
-                        for i in range(len(res_search_data)):
-                            if res_search_data[i][1] == "STATION":
-                                break
-                    else:
-                        pass        
+                    # 为了适应网站加入了地铁的新特性，将搜索与获取数据两步放在一起，便于对地铁车站与国铁车站重名现象的处理
+                    sta_info_formatted_data = ""
+                    for search_results in res_search_data:
+                        search_query = search_results['query']
+                        search_name = search_results['name']
+                        if "geo/" in search_query and station_name_input == search_name:
+                            sta_id = search_query.replace("geo/","")
+                            url_sta_info = f"{API.api_cnrail_geogv}poi/{sta_id}?locale=zhcn"
+                            sta_info_res = await client.get(url_sta_info)
+                            sta_info_formatted_data = utils.decrypt_cnrail_data(sta_info_res.text)
 
-                    rail_id = res_search_data[i][0]
+                            if is_metro_sta == True:
+                                if sta_info_formatted_data['featureType'] == "地铁站":
+                                    break
+                            else:
+                                if sta_info_formatted_data['featureType'] == "火车站":
+                                    break
 
-                url_sta_basic_info = f"{API.api_cnrail_geogv}station/{rail_id}?locale=zhcn&query-override=&requestGeom=true" # 车站基本信息
-                url_sta_route_info = f"{API.api_cnrail_geogv}station-link/{rail_id}?locale=zhcn&query-override=" # 车站所属线路
+                sta_status_judge = sta_info_formatted_data['featureType'] # 上一步判断车站类型是为了筛选重名地铁站，防止误选，这里不是
+                if sta_status_judge == "地铁站":
+                    is_metro_sta = True
+
+                sta_detail = sta_info_formatted_data['exd'][0]['data']
+                # 站名
+                if is_metro_sta == True:
+                    sta_name = sta_info_formatted_data['name'] + "地铁站"
+                else:
+                    sta_name = sta_info_formatted_data['name']
                 
-                sta_basic_info_res = await client.get(url_sta_basic_info)
-                sta_basic_info_data = json.loads(sta_basic_info_res.text) # 返回数据直接可以使用，没有套了个"data":{}的壳
-                
-                sta_route_info_res = await client.get(url_sta_route_info)
-                sta_route_info_rawdata = json.loads(sta_route_info_res.text)
-
-                sta_telecode_rawdata = sta_basic_info_data['teleCode'] # 电报码
-                sta_pinyincode_rawdata = sta_basic_info_data['pinyinCode'] # 拼音码
-                sta_location_rawdata = sta_basic_info_data['location'] # 所在地点
-                sta_serviceclass_rawdata = sta_basic_info_data['serviceClass'] # 服务类型
-
-                sta_name = sta_basic_info_data['localName'] # 车站名称
-                sta_bureau = "所属路局：" + sta_basic_info_data['bureau'].get("name") + "\n" # 所属单位
-                
-                if not sta_telecode_rawdata or sta_telecode_rawdata.strip() == "null":
+                # 电报码
+                sta_telecode_raw = sta_detail.get("tele_code")
+                if not sta_telecode_raw or str(sta_telecode_raw).strip() == "null":
                     sta_telecode = ""
                 else:
-                    sta_telecode = f"电报码：{sta_telecode_rawdata}\n"
+                    sta_telecode = f"电报码：{sta_detail['tele_code']}\n"
+                
+                sta_bureau = f"所属单位：{sta_detail['operators'][0]['name']}\n"
+                sta_location = f"位置：{sta_info_formatted_data['location']}\n"
 
-                if not sta_pinyincode_rawdata or sta_pinyincode_rawdata.strip() == "null":
-                    sta_pinyincode = ""
-                else:
-                    sta_pinyincode = f"拼音码：{sta_pinyincode_rawdata}\n"
-
-                if not sta_location_rawdata or sta_location_rawdata.strip() == "null":
-                    sta_location = ""
-                else:
-                    sta_location = f"位置：{sta_location_rawdata}\n" 
-
-                if sta_serviceclass_rawdata == "":
+                serviceclass_judge = sta_detail.get('trainservice')
+                if is_metro_sta == True:
+                    sta_serviceclass = "" # 地铁车站特殊处理                
+                elif not serviceclass_judge and is_metro_sta == False:
                     sta_serviceclass = "本站不办理客运业务\n"
                 else:
                     sta_serviceclass = "本站办理客运业务\n"
-
+                
                 hr_line = "------------------------------ \n"
-                if sta_route_info_rawdata['success'] == False:
-                    sta_route_info_result = f"{hr_line}暂无该车站线路数据\n"
+                # 沿途车站
+                
+                if not sta_detail.get('connection'):
+                    sta_route_info = f"{hr_line}暂无该车站线路数据\n"
                 else:
-                    sta_route_info_data = sta_route_info_rawdata['data']
-                    sta_route_info_result = ""
-                    for i in range(len(sta_route_info_data)):
-                        railname = sta_route_info_data[i]['railName']
-
-                        next_station_raw = sta_route_info_data[i]['next'][0][2]
-                        terminal_station_raw = sta_route_info_data[i]['next'][0][8]
-                        if next_station_raw == "*" and terminal_station_raw == "*":
-                            next_station = "起迄站"
-                            terminal_station = ""
+                    sta_route_data = sta_detail['connection']
+                    sta_route_info = ""
+                    for route in sta_route_data:
+                        linename = route['linename']
+                        next_data = route['next'][0]
+                        if next_data.get('adj'): # 如果下一站不是null，则必然有dest_station；如果下一站是null，本站必然是终点站
+                            next_sta = next_data['adj']['name']
+                            next_dest_sta = f"（{next_data['dest']['name']}）方向"
                         else:
-                            next_station = next_station_raw
-                            terminal_station = f"（{terminal_station_raw}）方向"
+                            if next_data['dest']['status'] == "END":
+                                next_sta = "起迄站"
+                                next_dest_sta = ""
 
-                        prev_station_raw = sta_route_info_data[i]['prev'][0][2]
-                        starting_station_raw = sta_route_info_data[i]['prev'][0][8]
-                        if prev_station_raw == "*" and starting_station_raw == "*":
-                            prev_station = "起迄站"
-                            starting_station = ""
+                        prev_data = route['prev'][0]
+                        if prev_data.get('adj'):
+                            prev_sta = prev_data['adj']['name']
+                            prev_dest_sta = f"（{prev_data['dest']['name']}）方向"
                         else:
-                            prev_station = prev_station_raw
-                            starting_station = f"（{starting_station_raw}）方向"
-
-                        sta_route_info_result += f"{hr_line}【{railname}】\n 下站{terminal_station}：{next_station}\n 上站{starting_station}：{prev_station}\n"
-
+                            if prev_data['dest']['status'] == "END":
+                                prev_sta = "起迄站"
+                                prev_dest_sta = ""
+                    
+                        sta_route_info += f"{hr_line}【{linename}】\n下站{next_dest_sta}：{next_sta}\n上站{prev_dest_sta}：{prev_sta}\n"
+                         # TODO
 
                 sta_info_result = Message([
                     "【",sta_name,"】基础信息如下：\n",
                     sta_telecode,
-                    sta_pinyincode,
                     sta_bureau,
                     sta_location,
                     sta_serviceclass,
-                    sta_route_info_result,
+                    sta_route_info,
                     "------------------------------\n \n",
                     "数据来源：cnrail.geogv.org",
 
