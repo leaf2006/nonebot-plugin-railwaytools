@@ -4,7 +4,6 @@
 import json
 import datetime  
 import httpx
-import traceback
 from nonebot import on_command,logger   # type: ignore
 from nonebot.adapters import Event
 from nonebot.adapters.onebot.v11 import Message, MessageSegment   # type: ignore
@@ -74,14 +73,14 @@ async def handle_train_info(event:Event, args: Message = CommandArg()): # type: 
                 stop_time = info_response_data['data']['trainDetail']['stopTime']
                 # 此处控制台会输出warning，但是可以忽略，因为是12306的问题
 
-                train_code = stop_time[0]['stationTrainCode'] # 车次
+                train_code_raw = stop_time[0]['stationTrainCode'] # 原始车次，根据始发站时的车次来判断
+                train_code_display = info_response_data['data']['trainDetail']['stationTrainCodeAll'] # 车次（全部）
                 start_station_name = stop_time[0]['start_station_name'] # 始发站名
                 end_station_name = stop_time[0]['end_station_name'] # 终到站名
 
                 jiaolu_corporation_code = stop_time[0]["jiaolu_corporation_code"] # 担当客运段
                 if info_data["trainCode"][0] == "D" or info_data["trainCode"][0] == "G" or info_data["trainCode"][0] == "C":
-                    # url_emu_code = API.api_rail_re + "train/" + info_data["trainCode"]
-                    url_emu_code = f"{API.api_rail_re}train/{train_code}"
+                    url_emu_code = f"{API.api_rail_re}train/{train_code_raw}"
                     res_info_EMU = await client.get(url_emu_code)
                     info_EMU_code = json.loads(res_info_EMU.text)
                     if res_info_EMU.status_code == 404 or not info_EMU_code:
@@ -99,9 +98,9 @@ async def handle_train_info(event:Event, args: Message = CommandArg()): # type: 
 
                 if request_dates == toDay:
                     current_date = datetime.date.today().strftime('%m月%d日') # Bug fixed：https://github.com/leaf2006/nonebot-plugin-railwaytools/issues/2
-                    train_schedule_info = f"{train_code}次{current_date}{start_station_name}方面正常开行"
+                    train_schedule_info = f"{train_code_raw}次{current_date}{start_station_name}方面正常开行"
                 else:
-                    train_schedule_info = f"{train_code}次{current_date}{start_station_name}方面不开行或已停运，请关注车站公告"
+                    train_schedule_info = f"{train_code_raw}次{current_date}{start_station_name}方面不开行或已停运，请关注车站公告"
 
                 stop_inf = []
                 stop_dict = {}
@@ -114,6 +113,7 @@ async def handle_train_info(event:Event, args: Message = CommandArg()): # type: 
                     stopover_time = stop['stopover_time'] + "分"
                     ticketDelay = stop['ticketDelay']
                     day_difference = stop['dayDifference']
+                    train_code_now = stop['stationTrainCode'] # 当前车次
                     stop_time_count = len(stop_time)
 
                     if i == 0: # 判断始发/终到站，给不存在的到点/发点变成“--:--”
@@ -135,6 +135,7 @@ async def handle_train_info(event:Event, args: Message = CommandArg()): # type: 
                     stop_dict.setdefault("发点",start_time)
                     stop_dict.setdefault("停车时间",stopover_time)
                     stop_dict.setdefault("day_difference",day_difference)
+                    stop_dict.setdefault("当前车次",train_code_now)
                     stop_inf.append(stop_dict)
                     stop_dict = {}
 
@@ -172,10 +173,14 @@ async def handle_train_info(event:Event, args: Message = CommandArg()): # type: 
 
                 station_result = ""
                 count = 1 # 给时刻表标上序号
-                # day_difference_buffer = 0
-                # day_differences = [int(stop.get('day_difference', 0)) for stop in stop_inf]
+
+                train_code_compare = train_code_raw
                 for i,stop in enumerate(stop_inf): # 想办法整出时刻表的结果，最后将结果添加到Message中去
-                    # day_difference_output = ""
+                    if stop['当前车次'] != train_code_compare:
+                        train_code_change_alarm = f"【列车自当前车站起车次号变更为{stop['当前车次']}】\n"
+                        train_code_compare = stop['当前车次']
+                    else:
+                        train_code_change_alarm = ""
 
                     if is_real_time_query == True:
                         if request_dates != toDay:
@@ -191,11 +196,11 @@ async def handle_train_info(event:Event, args: Message = CommandArg()): # type: 
                     else:
                         delay = ""
                     
-                    station_result += str(count) + "." + stop['站点'] + "：" + stop['到点'] + "到," + stop['发点'] + "开，停车" + stop['停车时间'] + delay + "\n"
+                    station_result += str(count) + "." + stop['站点'] + "：" + stop['到点'] + "到," + stop['发点'] + "开，停车" + stop['停车时间'] + delay + "\n" + train_code_change_alarm
                     count += 1
 
                 train_info_output = Message([ # 结果Message
-                    "车次：",train_code,
+                    "车次：",train_code_display,
                     "（",start_station_name , "——" , end_station_name , ") \n",
                     "担当客运段：" , jiaolu_corporation_code , "\n",
                     "车型信息：" , jiaolu_train_style , "\n",
