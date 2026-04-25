@@ -26,7 +26,7 @@ async def handle_xiaguanzhan_photo(event:Event, args: Message = CommandArg()): #
         await xiaguanzhan_photo.send("正在加载图片，时间可能略久...")
         async with httpx.AsyncClient(headers=API.headers, timeout=30.0) as client:
             data = {
-                "keyword": number
+                "keyword": number.lower() # Fix bug:小补丁
             }
             xiaguanzhan_resp = await client.post(API.api_xiaguanzhan, data=data)
             xiaguanzhan_resp.encoding = "gb2312"
