@@ -5,9 +5,8 @@ class API:
     api_12306 = "https://mobile.12306.cn/wxxcx/wechat/main/travelServiceQrcodeTrainInfo"
     api_rail_re = "https://api.rail.re/"
     api_EMU_route_schedule = "https://rail.re/img/"
-    api_xiaguanzhan = "http://www.xiaguanzhan.com/uploadfiles/"
+    api_xiaguanzhan = "http://www.xiaguanzhan.com/soso.asp"
     api_station_screen = "https://apis.uctb.cn/api/12306?"
-    # api_cnrail_geogv = "http://cnrail.geogv.org/api/v1/"
     api_cnrail_geogv = "http://cnrail.geogv.org/api/"
     
     headers = { # 加个请求头，保险一点

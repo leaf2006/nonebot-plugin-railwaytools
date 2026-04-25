@@ -1,3 +1,4 @@
+import re
 import json
 import httpx
 import asyncio
@@ -87,6 +88,8 @@ class utils:
             return json.loads(decrypted_str)
         except json.JSONDecodeError:
             return "ERR"
-
-
+    
+    def xiaguanzhan_first_match(pattern, text):
+        m = re.search(pattern, text, re.IGNORECASE)
+        return m.group(1).strip() if m else None
 

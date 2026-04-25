@@ -6,7 +6,6 @@ from httpx import AsyncClient
 from nonebot import on_command   # type: ignore
 from nonebot.adapters import Event
 from nonebot.adapters.onebot.v11 import Message, MessageSegment   # type: ignore
-from nonebot.plugin import PluginMetadata  # type: ignore
 from nonebot.params import CommandArg  # type: ignore
 from nonebot.rule import to_me  # type: ignore
 from .utils import utils
@@ -25,10 +24,39 @@ async def handle_xiaguanzhan_photo(event:Event, args: Message = CommandArg()): #
 
     if number := args.extract_plain_text():
         await xiaguanzhan_photo.send("正在加载图片，时间可能略久...")
-        photo = API.api_xiaguanzhan + number + ".jpg"
-        await xiaguanzhan_photo.finish(MessageSegment.image(photo))
+        async with httpx.AsyncClient(headers=API.headers, timeout=30.0) as client:
+            data = {
+                "keyword": number
+            }
+            xiaguanzhan_resp = await client.post(API.api_xiaguanzhan, data=data)
+            xiaguanzhan_resp.encoding = "gb2312"
+        # 获取基本信息
+        first_match = utils.xiaguanzhan_first_match
+        title = first_match(r'<h1><span class="blue"><a href="ProView\.asp\?ProId=[^"]*" title="[^"]*" target="_blank">(.*?)</a></span></h1>', xiaguanzhan_resp.text)
+        if title == None:
+            await xiaguanzhan_photo.finish(f"暂无{number}的信息")
+        manufacturer = first_match(r'生产厂商：(.*?)<BR>', xiaguanzhan_resp.text)
+        shoot_date = first_match(r'拍摄日期：(.*?)<BR>', xiaguanzhan_resp.text)
+        shoot_author = first_match(r'拍摄作者：(.*?)</FONT>', xiaguanzhan_resp.text)
+        photo_url = first_match(r'下载地址：<a href="(.*?)" target="_blank">', xiaguanzhan_resp.text)
+
+        title_separate = title.split(' ')
+        locomotive_no = title_separate[1]
+        locomotive_allocation = title_separate[2]
+
+        xiaguanzhan_photo_output = Message ([
+            MessageSegment.image(photo_url),
+            f"【{locomotive_no}】\n",
+            f"配属：{locomotive_allocation}\n",
+            f"生产厂商：{manufacturer}\n",
+            f"拍摄日期：{shoot_date}\n",
+            f"拍摄作者：{shoot_author}\n\n",
+            "数据来源：下关站-铁路摄影馆",
+        ])
+        await xiaguanzhan_photo.finish(xiaguanzhan_photo_output)
+
     else:
-        await xiaguanzhan_photo.finish("请输入正确的车号!，如：DF7C-5030")
+        await xiaguanzhan_photo.finish("请输入正确的车号!，如：HXD1D-1898")
 
 @EMU_route_schedule.handle() # 获取动车组交路表，还是来源于rail.re
 async def handle_EMU_route_schedule(event:Event, args: Message = CommandArg()):
