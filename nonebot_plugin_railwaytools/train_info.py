@@ -200,7 +200,7 @@ async def handle_train_info(event:Event, args: Message = CommandArg()): # type: 
 
                 train_info_output = Message([ # 结果Message
                     "车次：",train_code_display,
-                    "（",start_station_name , "——" , end_station_name , ") \n",
+                    "（",start_station_name , "——" , end_station_name , "） \n",
                     "担当客运段：" , jiaolu_corporation_code , "\n",
                     "车型信息：" , jiaolu_train_style , "\n",
                     "配属：" , jiaolu_dept_train , "\n",
