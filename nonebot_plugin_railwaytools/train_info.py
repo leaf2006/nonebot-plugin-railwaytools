@@ -71,7 +71,6 @@ async def handle_train_info(event:Event, args: Message = CommandArg()): # type: 
 
                 # 对返回数据进行分析
                 stop_time = info_response_data['data']['trainDetail']['stopTime']
-                # 此处控制台会输出warning，但是可以忽略，因为是12306的问题
 
                 train_code_raw = stop_time[0]['stationTrainCode'] # 原始车次，根据始发站时的车次来判断
                 train_code_display = info_response_data['data']['trainDetail']['stationTrainCodeAll'] # 车次（全部）
